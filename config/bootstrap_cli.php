@@ -29,3 +29,6 @@ use Cake\Core\Configure;
 // Set logs to different files so they don't have permission conflicts.
 Configure::write('Log.debug.file', 'cli-debug');
 Configure::write('Log.error.file', 'cli-error');
+
+// Set the default theme to ButterCream for Baking
+Configure::write('Bake.theme', 'ButterCream');

@@ -1,0 +1,87 @@
+---
+- name: Add PPA
+  apt_repository:
+    repo: "ppa:ondrej/nginx-mainline"
+
+- name: Apt Update
+  apt:
+    update_cache: yes
+
+- name: Install Nginx
+  apt:
+    name: nginx
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Create SSL Directories (ssl.crt)
+  file:
+    path: /etc/nginx/ssl.crt
+    state: directory
+    mode: 0755
+
+- name: Create SSL Directories (ssl.key)
+  file:
+    path: /etc/nginx/ssl.key
+    state: directory
+    mode: 0755
+
+- name: COPY SSL CERTIFICATES
+  template:
+    src: "{{ nginx_environment }}/ssl.crt/{{ item }}"
+    dest: "/etc/nginx/ssl.crt/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  with_items: "{{ nginx_ssl_crt }}"
+
+- name: COPY SSL KEYS
+  copy:
+    content: "{{ item.content }}"
+    dest: "/etc/nginx/ssl.key/{{ item.filename }}"
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  with_items: "{{ nginx_ssl_key }}"
+
+- name: Sites Available Configs
+  template:
+    src: "{{ nginx_environment }}/sites-available/{{ item }}"
+    dest: "/etc/nginx/sites-available/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  with_items: "{{ nginx_sites_available }}"
+
+- name: Create the Sites Enabled Symlinks for the site configs
+  file:
+    src: "/etc/nginx/sites-available/{{ item }}"
+    dest: "/etc/nginx/sites-enabled/{{ item }}"
+    state: link
+  with_items: "{{ nginx_sites_enabled }}"
+
+- name: Removing Default Symlink
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: Nginx Config
+  template:
+    src: "dhparam.pem"
+    dest: /etc/ssl/certs/dhparam.pem
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+
+- name: Nginx Config
+  template:
+    src: "nginx.conf"
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  notify: restart nginx

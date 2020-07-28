@@ -1,7 +1,7 @@
 {
-    "name": "cakephp/app",
-    "description": "CakePHP skeleton app",
-    "homepage": "https://cakephp.org",
+    "name": "queencitycodefactory/app",
+    "description": "CakePHP skeleton app with Vagrant/Ansible",
+    "homepage": "https://www.willettstech.com",
     "type": "project",
     "license": "MIT",
     "require": {
@@ -9,13 +9,15 @@
         "cakephp/cakephp": "~4.1.0",
         "cakephp/migrations": "^3.0",
         "cakephp/plugin-installer": "^1.2",
-        "mobiledetect/mobiledetectlib": "^2.8"
+        "mobiledetect/mobiledetectlib": "^2.8",
+        "queencitycodefactory/butter-cream": "dev-cake-4.x"
     },
     "require-dev": {
         "cakephp/bake": "^2.0.3",
         "cakephp/cakephp-codesniffer": "~4.2.0",
         "cakephp/debug_kit": "^4.1",
         "josegonzalez/dotenv": "^3.2",
+        "phpstan/phpstan": "^0.12.7",
         "phpunit/phpunit": "~8.5.0",
         "psy/psysh": "@stable"
     },
@@ -43,13 +45,14 @@
             "@test",
             "@cs-check"
         ],
-        "cs-check": "phpcs --colors -p  src/ tests/",
-        "cs-fix": "phpcbf --colors -p src/ tests/",
+        "cs-check": "phpcs --colors -p --standard=vendor/cakephp/cakephp-codesniffer/CakePHP src/ tests/",
+        "cs-fix": "phpcbf --colors --standard=vendor/cakephp/cakephp-codesniffer/CakePHP src/ tests/",
         "stan": "phpstan analyse src/",
         "test": "phpunit --colors=always"
     },
     "prefer-stable": true,
     "config": {
         "sort-packages": true
-    }
+    },
+    "minimum-stability": "dev"
 }

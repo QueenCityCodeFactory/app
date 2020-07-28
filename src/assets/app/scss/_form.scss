@@ -1,0 +1,17 @@
+.required > label:after {
+    content: "\f069";
+    display: inline-block;
+    font: normal normal 900 14px/1 'Font Awesome 5 Free';
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transform: translate(0, 0);
+    font-size: 0.75em;
+    color: #1782e1;
+    margin-left: 5px;
+}
+
+.required.is-invalid > label:after {
+    color: red;
+}

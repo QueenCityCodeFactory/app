@@ -1,0 +1,23 @@
+.btn-xs {
+    @include button-size($btn-padding-y-xs, $btn-padding-x-xs, $btn-font-size-xs, $btn-line-height-xs, $btn-border-radius-xs);
+}
+
+.btn-sq-lg {
+    width: 2.75rem !important;
+    height: 2.75rem !important;
+}
+
+.btn-sq {
+    width: 2.188rem !important;
+    height: 2.188rem !important;
+}
+
+.btn-sq-sm {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+}
+
+.btn-sq-xs {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+}

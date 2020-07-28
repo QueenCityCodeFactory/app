@@ -1,0 +1,70 @@
+---
+- name: Add PPA
+  apt_repository:
+    repo: "ppa:ondrej/php"
+
+- name: Apt Update
+  apt:
+    update_cache: yes
+
+- name: Install PHP and Dependencies
+  apt:
+    pkg:
+      - php7.4-fpm
+      - php7.4-cli
+      - php7.4-mysql
+      - php7.4-intl
+      - php7.4-ldap
+      - php7.4-sqlite3
+      - php7.4-curl
+      - php7.4-xsl
+      - php7.4-imap
+      - php7.4-imagick
+      - php7.4-memcached
+      - php7.4-zip
+      - php7.4-mbstring
+      - php7.4-json
+      - php7.4-soap
+      - php7.4-xml
+      - php7.4-gd
+    state: present
+
+- name: Install Composer
+  get_url:
+    url: https://getcomposer.org/composer.phar
+    dest: /usr/local/bin/composer
+    mode: 0755
+    validate_certs: no
+
+- name: Configure php7.4-fpm pool.
+  lineinfile:
+    dest: "/etc/php/7.4/fpm/pool.d/www.conf"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - regexp: "^listen.?=.+$"
+      line: "listen = /run/php/php7.4-fpm.sock"
+    - regexp: "^pm.max_children.?=.+$"
+      line: "pm.max_children = 120"
+    - regexp: "^pm.start_servers.?=.+$"
+      line: "pm.start_servers = 10"
+    - regexp: "^pm.min_spare_servers.?=.+$"
+      line: "pm.min_spare_servers = 10"
+    - regexp: "^pm.max_spare_servers.?=.+$"
+      line: "pm.max_spare_servers = 20"
+    - regexp: "^;pm.max_requests.?=.+$"
+      line: "pm.max_requests = 500"
+
+- name: Configure php7.4 php.ini
+  lineinfile:
+    dest: "/etc/php/7.4/fpm/php.ini"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - regexp: "^post_max_size.?=.+$"
+      line: "post_max_size = 108M"
+    - regexp: "^upload_max_filesize.?=.+$"
+      line: "upload_max_filesize = 100M"
+  notify: restart php7.4-fpm

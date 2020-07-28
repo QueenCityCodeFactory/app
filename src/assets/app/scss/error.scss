@@ -1,0 +1,98 @@
+body {
+    &.error-page {
+        code {
+            padding: 2px 4px;
+            font-size: 90%;
+            color: $code-color;
+            background-color: transparent;
+            border-radius: 0;
+        }
+        .code-dump, pre {
+            display: block;
+            padding: 15px;
+            font-size: 10px;
+            word-break: break-all;
+            word-wrap: break-word;
+            color: $pre-color;
+            background-color: #f5f5f5;
+            border: 1px solid #ccc;
+            border-radius: $border-radius;
+
+            // Account for some code outputs that place code tags in pre tags
+            code {
+                padding: 0;
+                font-size: inherit;
+                color: inherit;
+                white-space: pre-wrap;
+                background-color: transparent;
+                border-radius: 0;
+            }
+        }
+
+        .stack-frame a {
+            display: block;
+            text-decoration: none;
+        }
+        .stack-frame.active {
+            background: #e5e5e5;
+        }
+        .stack-frame a:hover {
+            text-decoration: underline;
+        }
+        .stack-file,
+        .stack-function {
+            display: block;
+            margin-bottom: 5px;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+        .stack-file {
+            font-family: Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace;
+            font-size: 11px;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+        .stack-frame-args {
+            float: right;
+        }
+        .stack-details {
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f5f5f5;
+            border: 1px solid #ccc;
+            border-radius: $border-radius;
+            pre {
+                background: #fefefe;
+            }
+        }
+        .stack-frame-file {
+            font-family: consolas, monospace;
+        }
+        .code-excerpt {
+            width: 100%;
+            margin: 15px 0;
+            background: #fefefe;
+        }
+        .code-highlight {
+            display: block;
+            background: #fff59d;
+        }
+        .excerpt-line {
+            padding-left: 2px;
+        }
+        .excerpt-number {
+            background: #f6f6f6;
+            width: 50px;
+            text-align: right;
+            color: #666;
+            border-right: 1px solid #ccc;
+            padding: 2px;
+        }
+        .excerpt-number:after {
+            content: attr(data-number);
+        }
+        dl.dl-horizontal dt {
+            text-align: right;
+        }
+    }
+}

@@ -44,3 +44,10 @@ if (version_compare(INTL_ICU_VERSION, '50.1', '<')) {
 if (!extension_loaded('mbstring')) {
     trigger_error('You must enable the mbstring extension to use CakePHP.', E_USER_ERROR);
 }
+
+/*
+ * You can remove this if you are confident you have memcached installed.
+ */
+if (!extension_loaded('memcached')) {
+    trigger_error('You must enable the memcached extension to use CakePHP.', E_USER_ERROR);
+}

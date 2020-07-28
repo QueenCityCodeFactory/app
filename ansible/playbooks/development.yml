@@ -1,0 +1,109 @@
+---
+- name: Build the Development Environment
+  hosts: development
+  module_defaults:
+    apt:
+      force_apt_get: yes
+  user: vagrant
+  become: yes
+  become_user: root
+  vars:
+    app_path: "/var/www/cakephp-app"
+    app_name: "cakephp-app"
+    become_alternate_user: "vagrant"
+  roles:
+    - system
+    - ntp
+    - php
+    - nginx
+    - mysql
+    - memcached
+    - wkhtmltopdf
+    - nodejs
+  tasks:
+    - name: DONT PANIC NTP and VM Should Accept Traveling to the Future by more than 1000s
+      lineinfile:
+        path: /etc/ntp.conf
+        line: 'tinker panic 0'
+      notify: restart ntp
+
+    - name: make a symbolic link for application crontab file
+      file:
+        src: "{{ app_path }}/crontab"
+        dest: "/etc/cron.d/{{ app_name }}"
+        state: link
+
+    - name: install composer dependencies
+      composer: command=install no_dev=no working_dir={{ app_path }}
+      become: yes
+      become_user: "{{ become_alternate_user }}"
+      ignore_errors: yes
+
+    - name: Install gulp globally
+      shell: "source ~/.nvm/nvm.sh && npm install -g gulpjs/gulp-cli"
+      become: yes
+      become_user: "{{ become_alternate_user }}"
+      args:
+        executable: /bin/bash
+
+    - name: Install node packages for application
+      shell: "source ~/.nvm/nvm.sh && cd {{ app_path }} && npm install"
+      become: yes
+      become_user: "{{ become_alternate_user }}"
+      args:
+        executable: /bin/bash
+
+    - name: Create /var/files/
+      file:
+        path: "/var/files/"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: 0755
+
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
+
+    - name: restart php7.4-fpm
+      service:
+        name: php7.4-fpm
+        state: restarted
+
+    - name: Create MySQL vagrant user
+      shell: "mysql -e \"CREATE USER IF NOT EXISTS 'vagrant'@'%' IDENTIFIED WITH mysql_native_password BY 'vagrant'\";"
+      become: yes
+      become_user: root
+
+    - name: Grant the MySQL vagrant user some permissions
+      shell: "mysql -e \"GRANT ALL on *.* to 'vagrant'@'%'WITH GRANT OPTION\";"
+      become: yes
+      become_user: root
+
+    - name: Flushing the MySQL Privileges
+      shell: "mysql -e \"FLUSH PRIVILEGES\";"
+      become: yes
+      become_user: root
+
+    - name: Create the MySQL Database for the project
+      shell: "mysql -e \"CREATE DATABASE IF NOT EXISTS cakephp_app DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_general_ci;\";"
+      become: yes
+      become_user: root
+
+    # - name: Configure mysqld.cnf - turn on general log for development
+    #   lineinfile:
+    #     dest: "/etc/mysql/mysql.conf.d/mysqld.cnf"
+    #     regexp: "{{ item.regexp }}"
+    #     line: "{{ item.line }}"
+    #     state: present
+    #     backrefs: yes
+    #   with_items:
+    #     - regexp: "^#general_log.*=.+$"
+    #       line: "general_log             = 1"
+    #     - regexp: "^#general_log_file.*=.+$"
+    #       line: "general_log_file        = /var/log/mysql/mysql.log"
+    #   notify: restart mysql
+
+    #- name: run migrations
+    #  command: "{{ app_path }}/bin/cake migrations migrate -v"

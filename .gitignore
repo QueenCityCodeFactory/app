@@ -2,7 +2,9 @@
 ##########################
 /config/app_local.php
 /config/.env
+/config/Migrations/schema-dump-default.lock
 /logs/*
+/node_modules/*
 /tmp/*
 /vendor/*
 
@@ -39,5 +41,11 @@ Thumbs.db
 nbproject/*
 # Visual Studio Code
 .vscode
+.history
 # Sass preprocessor
 .sass-cache/
+# Vagrant
+.vagrant
+# PHP Intel
+.phpintel
+*.mwb.bak

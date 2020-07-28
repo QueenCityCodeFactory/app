@@ -176,6 +176,19 @@ ServerRequest::addDetector('tablet', function ($request) {
 
     return $detector->isTablet();
 });
+//ServerRequest::addDetector('admin', function ($request) {
+//    return $request->getParam('prefix') && strtolower($request->getParam('prefix')) === 'admin';
+//});
+ServerRequest::addDetector('pdf', [
+    'accept' => ['application/pdf'],
+    'param' => '_ext',
+    'value' => 'pdf'
+]);
+ServerRequest::addDetector('csv', [
+    'accept' => ['text/pdf'],
+    'param' => '_ext',
+    'value' => 'csv'
+]);
 
 /*
  * You can set whether the ORM uses immutable or mutable Time types.

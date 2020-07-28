@@ -1,0 +1,23 @@
+---
+- name: Install WkHtmlToPdf Dependencies
+  apt:
+    pkg:
+      - libxrender1
+      - libfontconfig1
+      - libx11-dev
+      - libjpeg62
+      - libxtst6
+      - fontconfig
+      - xfonts-75dpi
+      - xfonts-base
+    state: present
+
+- name: 'Download WkHtmlToPdf'
+  get_url:
+    url: https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb
+    dest: /root/wkhtmltox_0.12.6-1.focal_amd64.deb
+    force: false
+    validate_certs: no # this is fucked up
+
+- name: 'Install WkHtmlToPdf'
+  command: dpkg -i /root/wkhtmltox_0.12.6-1.focal_amd64.deb

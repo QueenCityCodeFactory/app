@@ -1,0 +1,11 @@
+---
+- name: Install NTP
+  apt:
+    pkg:
+      - ntp
+      - ntpstat
+      - ntpdate
+    state: present
+
+- name: set timeone to UTC
+  command: timedatectl set-timezone UTC

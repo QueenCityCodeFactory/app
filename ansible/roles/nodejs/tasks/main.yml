@@ -1,0 +1,63 @@
+---
+- name: Install dependencies
+  apt:
+    pkg:
+      - git
+      - curl
+      - build-essential
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Ensure user's home exists
+  file:
+  args:
+    path: "~{{ become_alternate_user }}"
+    state: directory
+    owner: "{{ become_alternate_user }}"
+
+- name: Install nvm
+  become: yes
+  become_user: "{{ become_alternate_user }}"
+  git:
+  args:
+    repo: https://github.com/nvm-sh/nvm.git
+    dest: ~/.nvm
+    version: "{{ nvm_version }}"
+
+- name: Source nvm in ~/.profile
+  become: yes
+  become_user: "{{ become_alternate_user }}"
+  lineinfile: >
+    dest=~/{{ item }}
+    line="source ~/.nvm/nvm.sh"
+    create=yes
+  with_items:
+    - .profile
+    - .bashrc
+
+- name: Install Node {{ nodejs_version }}
+  shell: "source ~/.nvm/nvm.sh && nvm install {{ nodejs_version }}"
+  become: yes
+  become_user: "{{ become_alternate_user }}"
+  args:
+    executable: /bin/bash
+  register: nvm_install_result
+  changed_when: "'is already installed.' not in nvm_install_result.stdout and 'is already installed.' not in nvm_install_result.stderr"
+
+- name: Check if {{ nodejs_version }} is the default node version
+  shell: "source ~/.nvm/nvm.sh && nvm ls | grep -e 'default -> {{ nodejs_version }}'"
+  register: nvm_check_default
+  become: yes
+  become_user: "{{ become_alternate_user }}"
+  args:
+    executable: /bin/bash
+  changed_when: false
+  failed_when: false
+
+- name: Set default node version to {{ nodejs_version }}
+  shell: "source ~/.nvm/nvm.sh && nvm alias default {{ nodejs_version }}"
+  become: yes
+  become_user: "{{ become_alternate_user }}"
+  args:
+    executable: /bin/bash
+  when: nvm_check_default.rc != 0

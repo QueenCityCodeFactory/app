@@ -1,0 +1,10 @@
+.dropdown-menu {
+    .nav-link {
+        color: #343A40 !important;
+    }
+}
+.dropdown-menu {
+    &.show {
+        // padding-left: 10px;
+    }
+}

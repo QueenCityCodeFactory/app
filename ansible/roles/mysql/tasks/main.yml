@@ -1,0 +1,55 @@
+---
+- name: Download MySQL Apt Repo Setup Tool
+  get_url:
+    url: https://dev.mysql.com/get/mysql-apt-config_0.8.15-1_all.deb
+    dest: /tmp/mysql-apt-config.deb
+    force: false
+
+- name: ensure mysql upstream repository package is configured
+  debconf:
+    name: mysql-apt-config
+    question: "mysql-apt-config/{{ item.question }}"
+    value: "{{ item.value }}"
+    vtype: "{{ item.vtype | default ('select') }}"
+  with_items:
+    - question: select-server
+      value: "mysql-8.0"
+  become: yes
+  become_user: root
+
+- name: Run MySQL Apt Repo Setup Tool
+  apt:
+    deb: /tmp/mysql-apt-config.deb
+  become: yes
+  become_user: root
+
+- name: Apt Update
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install MySQL packages
+  apt:
+    pkg:
+      - mysql-server
+      - mysql-client
+    state: present
+    update_cache: yes
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+
+- name: start mysql
+  service:
+    name: mysql
+    state: started
+
+- name: Configure mysqld.cnf
+  lineinfile:
+    dest: "/etc/mysql/mysql.conf.d/mysqld.cnf"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - regexp: "^bind-address.*=.+$"
+      line: "#bind-address           = 127.0.0.1"
+  notify: restart mysql

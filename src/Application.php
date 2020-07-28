@@ -56,7 +56,9 @@ class Application extends BaseApplication
             $this->addPlugin('DebugKit');
         }
 
-        // Load more plugins here
+        $this->addPlugin('ButterCream', ['bootstrap' => true, 'routes' => false]);
+        $this->addPlugin('CakePdf', ['bootstrap' => true, 'routes' => true]);
+        $this->addPlugin('CakeSpreadsheet', ['bootstrap' => true, 'routes' => true]);
     }
 
     /**

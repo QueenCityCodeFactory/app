@@ -1,0 +1,20 @@
+#poptart-container {
+    position: fixed;
+    z-index: 999999;
+    pointer-events: none;
+    top: 70px;
+    right: 15px;
+    >.toast {
+        pointer-events: auto;
+        width: 350px;
+    }
+}
+
+@include media-breakpoint-down(sm) {
+    #poptart-container {
+        left: 15px;
+        >.toast {
+            width: auto;
+        }
+    }
+}

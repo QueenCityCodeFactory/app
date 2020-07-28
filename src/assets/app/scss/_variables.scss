@@ -1,0 +1,55 @@
+// Font Awesome Overrides
+$fa-font-path: "/font";
+
+// Custom App Settings
+$fixed-footer-height: 50px;
+
+$font-size-base: 1rem;
+
+// Extra Small (xs) Sizes
+$font-size-xs: ($font-size-base * .75) !default;
+$line-height-xs: 1.5 !default;
+$border-radius-xs: .1875rem !default;
+
+// Extra Small Input Buttons
+$input-btn-padding-y-xs: .125rem !default;
+$input-btn-padding-x-xs: .25rem !default;
+$input-btn-font-size-xs: $font-size-xs !default;
+$input-btn-line-height-xs: $line-height-xs !default;
+
+// Extra Small Buttons
+$btn-padding-y-xs: $input-btn-padding-y-xs !default;
+$btn-padding-x-xs: $input-btn-padding-x-xs !default;
+$btn-font-size-xs: $input-btn-font-size-xs !default;
+$btn-line-height-xs: $input-btn-line-height-xs !default;
+$btn-border-radius-xs: $border-radius-xs !default;
+
+// Some Colors
+$blue: #007bff !default;
+$indigo: #6610f2 !default;
+$purple: #6f42c1 !default;
+$pink: #e83e8c !default;
+$red: #dc3545 !default;
+$orange: #fd7e14 !default;
+$yellow: #ffc107 !default;
+$green: #28a745 !default;
+$teal: #20c997 !default;
+$cyan: #17a2b8 !default;
+$chocolate: #7B3F00 !default;
+$lime: #32CD32 !default;
+$light-orange: #e88f04 !default;
+$gray-400: #ced4da !default;
+
+// Some Extra Theme Colors
+$theme-colors: (
+    "default": $gray-400,
+    "light-orange": $light-orange,
+    "orange": $orange,
+    "purple": $purple,
+    "pink": $pink,
+    "chocolate": $chocolate,
+    "lime": $lime
+);
+
+$extended-breakpoints: (xxxs: 0, xxs: 320px, xs: 568px, sm: 667px, md: 768px, lg: 992px, xl: 1200px, xxl: 1440px, xxxl: 1600px, xxxxl: 2560px) !default
+

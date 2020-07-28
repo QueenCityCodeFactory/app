@@ -1,0 +1,63 @@
+---
+nginx_environment: development
+nginx_ssl_crt:
+  - cakephp.app.local.crt
+nginx_ssl_key:
+  - filename: cakephp.app.local.key
+    content: |
+          -----BEGIN PRIVATE KEY-----
+          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
+          AXgo45Sp0SjbfEngIhfsDkdQTmzGtg==
+          -----END PRIVATE KEY-----
+nginx_sites_available:
+  - cakephp.app.local.conf
+nginx_sites_enabled:
+  - cakephp.app.local.conf
