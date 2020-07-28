@@ -16,7 +16,10 @@ declare(strict_types=1);
  */
 namespace App\Controller;
 
-use Cake\Controller\Controller;
+use ButterCream\Controller\Controller;
+use Cake\Core\Configure;
+use Cake\Event\EventInterface;
+use Cake\Routing\Router;
 
 /**
  * Application Controller
@@ -28,6 +31,7 @@ use Cake\Controller\Controller;
  */
 class AppController extends Controller
 {
+
     /**
      * Initialization hook method.
      *
@@ -41,13 +45,53 @@ class AppController extends Controller
     {
         parent::initialize();
 
-        $this->loadComponent('RequestHandler');
-        $this->loadComponent('Flash');
+        // $this->loadComponent('Authentication.Authentication');
+        // if ($this->request->is('admin')) {
+        //     $this->loadComponent('Auth', [
+        //         'className' => 'Auth',
+        //         'loginAction' => [
+        //             'controller' => 'Users',
+        //             'action' => 'login',
+        //             'prefix' => 'admin'
+        //         ],
+        //         'loginRedirect' => [
+        //             'controller' => 'Dashboard',
+        //             'action' => 'index',
+        //             'prefix' => 'admin'
+        //         ],
+        //         'flash' => [
+        //             'element' => 'error',
+        //         ],
+        //         'authError' => $this->request->getSession()->check('Auth.User') ? 'Insufficient privileges to view requested resources! You can not access: ' . Router::url(null, true) : 'Please login to continue!',
+        //         'authenticate' => [
+        //             'Form' => [
+        //                 'fields' => [
+        //                     'username' => 'email',
+        //                     'password' => 'password'
+        //                 ],
+        //                 'finder' => 'auth'
+        //             ]
+        //         ]
+        //     ]);
+        // }
+    }
 
-        /*
-         * Enable the following component for recommended CakePHP form protection settings.
-         * see https://book.cakephp.org/4/en/controllers/components/form-protection.html
-         */
-        //$this->loadComponent('FormProtection');
+    /**
+     * Controller Before Filter Callback
+     *
+     * @param Event $event The Event Object
+     * @return void
+     */
+    public function beforeFilter(EventInterface $event)
+    {
+        parent::beforeFilter($event);
+
+        if ($this->request->is('ajax')) {
+            Configure::write('debug', false);
+        }
+
+        // if ($this->request->is('admin') && !$this->Auth->user()) {
+        //    $this->Auth->config('authError', false);
+        // }
     }
 }

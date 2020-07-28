@@ -69,7 +69,8 @@ return [
         'environment' => env('APP_ENVIRONMENT', 'production'),
         'title' => env('APP_TITLE', ''),
         'copyright' => env('APP_COPYRIGHT', ''),
-        'copyrightYear' => env('APP_COPYRIGHT_YEAR', '')
+        'copyrightYear' => env('APP_COPYRIGHT_YEAR', ''),
+        'author' => env('APP_AUTHOR', '')
     ],
 
     /**
