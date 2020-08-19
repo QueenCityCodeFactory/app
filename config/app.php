@@ -200,7 +200,7 @@ return [
         'trace' => true,
     ],
 
-    /**
+    /*
      * Debugger configuration
      *
      * Define development error values for Cake\Error\Debugger
@@ -291,7 +291,7 @@ return [
      *   other RDBMS.
      */
     'Datasources' => [
-        /**
+        /*
          * These configurations should contain permanent settings used
          * by all environments.
          *
@@ -307,17 +307,17 @@ return [
             'persistent' => false,
             'timezone' => 'UTC',
 
-            //'host' => 'localhost',
-            //'username' => '',
-            //'password' => '',
-            //'database' => '',
+            // 'host' => 'localhost',
+            // 'username' => '',
+            // 'password' => '',
+            // 'database' => '',
 
-            /**
+            /*
              * For MariaDB/MySQL the internal default changed from utf8 to utf8mb4, aka full utf-8 support, in CakePHP 3.6
              */
             'encoding' => 'utf8mb4',
 
-            /**
+            /*
              * If your MySQL server is configured with `skip-character-set-client-handshake`
              * then you MUST use the `flags` config to set your charset encoding.
              * For e.g. `'flags' => [\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4']`
