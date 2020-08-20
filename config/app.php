@@ -73,7 +73,7 @@ return [
         'author' => env('APP_AUTHOR', '')
     ],
 
-    /**
+    /*
      * Used for Cache Busting CSS and JS files
      * Should use the current timestamp and up date after build CSS or JS
      *
@@ -436,7 +436,7 @@ return [
         'defaults' => 'php',
     ],
 
-    /**
+    /*
      * FileApi Settings
      */
     //'FileApi' => [
@@ -444,7 +444,7 @@ return [
     //    'tmpPath' => TMP . 'files' . DS,
     //],
 
-    /**
+    /*
      * Timezones
      */
     //'Timezones' => [
