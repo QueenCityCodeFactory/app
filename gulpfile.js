@@ -53,7 +53,7 @@ const stylesToProcess = {
         './node_modules/select2/dist/css/select2.css',
         './node_modules/select2-bootstrap4-theme/dist/select2-bootstrap4.min.css',
         './node_modules/tempusdominus-bootstrap-4/build/css/tempusdominus-bootstrap-4.css',
-        './src/assets/app/scss/main.scss'
+        './assets/app/scss/main.scss'
     ]
 };
 
@@ -75,7 +75,7 @@ const scriptsToProcess = {
         './node_modules/inputmask/dist/jquery.inputmask.js',
         './node_modules/jquery-countdown/dist/jquery.countdown.min.js',
         './node_modules/@fortawesome/fontawesome-free/js/all.min.js',
-        './src/assets/app/js/*.js'
+        './assets/app/js/*.js'
     ]
 };
 
@@ -85,7 +85,7 @@ const scriptsToProcess = {
  */
 const scriptsToLint = {
     app: [
-        './src/assets/app/js/*.js'
+        './assets/app/js/*.js'
     ]
 };
 
@@ -306,7 +306,7 @@ function cacheBuster(done) {
  * @param Function done callback to signal completion
  */
 function watchSass(done) {
-    gulp.watch('./src/assets/**/*.scss', { usePolling: true }, gulp.series(exports.styles, cacheBuster));
+    gulp.watch('./assets/**/*.scss', { usePolling: true }, gulp.series(exports.styles, cacheBuster));
     done();
 }
 
@@ -315,7 +315,7 @@ function watchSass(done) {
  * @param Function done callback to signal completion
  */
 function watchScript(done) {
-    gulp.watch('./src/assets/**/*.js',  { usePolling: true }, gulp.series(exports.scripts, cacheBuster));
+    gulp.watch('./assets/**/*.js',  { usePolling: true }, gulp.series(exports.scripts, cacheBuster));
     done();
 }
 
