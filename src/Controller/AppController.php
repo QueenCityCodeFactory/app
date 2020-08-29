@@ -19,7 +19,6 @@ namespace App\Controller;
 use ButterCream\Controller\Controller;
 use Cake\Core\Configure;
 use Cake\Event\EventInterface;
-use Cake\Routing\Router;
 
 /**
  * Application Controller
@@ -31,7 +30,6 @@ use Cake\Routing\Router;
  */
 class AppController extends Controller
 {
-
     /**
      * Initialization hook method.
      *
@@ -46,40 +44,13 @@ class AppController extends Controller
         parent::initialize();
 
         // $this->loadComponent('Authentication.Authentication');
-        // if ($this->request->is('admin')) {
-        //     $this->loadComponent('Auth', [
-        //         'className' => 'Auth',
-        //         'loginAction' => [
-        //             'controller' => 'Users',
-        //             'action' => 'login',
-        //             'prefix' => 'admin'
-        //         ],
-        //         'loginRedirect' => [
-        //             'controller' => 'Dashboard',
-        //             'action' => 'index',
-        //             'prefix' => 'admin'
-        //         ],
-        //         'flash' => [
-        //             'element' => 'error',
-        //         ],
-        //         'authError' => $this->request->getSession()->check('Auth.User') ? 'Insufficient privileges to view requested resources! You can not access: ' . Router::url(null, true) : 'Please login to continue!',
-        //         'authenticate' => [
-        //             'Form' => [
-        //                 'fields' => [
-        //                     'username' => 'email',
-        //                     'password' => 'password'
-        //                 ],
-        //                 'finder' => 'auth'
-        //             ]
-        //         ]
-        //     ]);
-        // }
+        // $this->loadComponent('Authorization.Authorization');
     }
 
     /**
      * Controller Before Filter Callback
      *
-     * @param Event $event The Event Object
+     * @param \Cake\Event\EventInterface $event The Event Object
      * @return void
      */
     public function beforeFilter(EventInterface $event)
@@ -89,9 +60,5 @@ class AppController extends Controller
         if ($this->request->is('ajax')) {
             Configure::write('debug', false);
         }
-
-        // if ($this->request->is('admin') && !$this->Auth->user()) {
-        //    $this->Auth->config('authError', false);
-        // }
     }
 }

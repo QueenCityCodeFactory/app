@@ -53,7 +53,7 @@ return [
             'WA' => 'Washington',
             'WV' => 'West Virginia',
             'WI' => 'Wisconsin',
-            'WY' => 'Wyoming'
+            'WY' => 'Wyoming',
         ],
         // Canadian Provinces
         'CA' => [
@@ -69,7 +69,7 @@ return [
             'QC' => 'Quebec',
             'SK' => 'Saskatchewan',
             'NT' => 'Northwest Territories',
-            'YT' => 'Yukon Territory'
-        ]
-    ]
+            'YT' => 'Yukon Territory',
+        ],
+    ],
 ];

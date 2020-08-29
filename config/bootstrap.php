@@ -182,12 +182,12 @@ ServerRequest::addDetector('tablet', function ($request) {
 ServerRequest::addDetector('pdf', [
     'accept' => ['application/pdf'],
     'param' => '_ext',
-    'value' => 'pdf'
+    'value' => 'pdf',
 ]);
 ServerRequest::addDetector('csv', [
     'accept' => ['text/pdf'],
     'param' => '_ext',
-    'value' => 'csv'
+    'value' => 'csv',
 ]);
 
 /*

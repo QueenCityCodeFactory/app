@@ -97,4 +97,3 @@ define('CAKE', CORE_PATH . 'src' . DS);
  * File path to the plugins directory.
  */
 define('PLUGINS', ROOT . DS . 'plugins' . DS);
-

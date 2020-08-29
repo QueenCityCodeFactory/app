@@ -1,9 +1,9 @@
 <?php
 
+use ButterCream\Error\ExceptionRenderer;
 use Cake\Cache\Engine\MemcachedEngine;
 use Cake\Database\Connection;
 use Cake\Database\Driver\Mysql;
-use ButterCream\Error\ExceptionRenderer;
 use Cake\Log\Engine\FileLog;
 use Cake\Mailer\Transport\MailTransport;
 
@@ -70,7 +70,7 @@ return [
         'title' => env('APP_TITLE', ''),
         'copyright' => env('APP_COPYRIGHT', ''),
         'copyrightYear' => env('APP_COPYRIGHT_YEAR', ''),
-        'author' => env('APP_AUTHOR', '')
+        'author' => env('APP_AUTHOR', ''),
     ],
 
     /*
