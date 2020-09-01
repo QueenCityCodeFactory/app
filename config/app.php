@@ -195,7 +195,7 @@ return [
     'Error' => [
         'errorLevel' => E_ALL,
         'exceptionRenderer' => ExceptionRenderer::class,
-        'skipLog' => ['ButterCream\Network\Exception\HttpException'],
+        'skipLog' => ['ButterCream\Http\Exception\HttpException'],
         'log' => true,
         'trace' => true,
     ],
