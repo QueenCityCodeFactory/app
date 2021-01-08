@@ -6,19 +6,19 @@
     "license": "MIT",
     "require": {
         "php": ">=7.2",
-        "cakephp/cakephp": "~4.1.0",
+        "cakephp/cakephp": "~4.2.0",
         "cakephp/migrations": "^3.0",
         "cakephp/plugin-installer": "^1.3",
         "mobiledetect/mobiledetectlib": "^2.8",
         "queencitycodefactory/butter-cream": "dev-cake-4.x"
     },
     "require-dev": {
-        "cakephp/bake": "^2.0.3",
+        "cakephp/bake": "^2.3",
         "cakephp/cakephp-codesniffer": "~4.2.0",
-        "cakephp/debug_kit": "^4.1",
+        "cakephp/debug_kit": "^4.4",
         "josegonzalez/dotenv": "^3.2",
         "phpstan/phpstan": "^0.12.7",
-        "phpunit/phpunit": "~8.5.0",
+        "phpunit/phpunit": "~8.5.0 || ^9.3",
         "psy/psysh": "@stable"
     },
     "suggest": {
@@ -45,7 +45,7 @@
             "@cs-check"
         ],
         "cs-check": "phpcs --colors -p --standard=vendor/cakephp/cakephp-codesniffer/CakePHP src/ tests/",
-        "cs-fix": "phpcbf --colors --standard=vendor/cakephp/cakephp-codesniffer/CakePHP src/ tests/",
+        "cs-fix": "phpcbf --colors -p --standard=vendor/cakephp/cakephp-codesniffer/CakePHP src/ tests/",
         "stan": "phpstan analyse src/",
         "test": "phpunit --colors=always"
     },
