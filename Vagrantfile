@@ -37,13 +37,17 @@ Vagrant.configure("2") do |config|
       v.customize ["modifyvm", :id, "--cpus", settings['cpus']]
     end
 
-    node.vm.network "private_network", dhcp: true
+    # Prefer vmware_fusion over virtualbox
+    node.vm.provider "vmware_fusion"
+    node.vm.provider "virtualbox"
+
+    node.vm.network "private_network", type: "dhcp"
     node.vm.hostname = settings['hostname']
     node.ssh.forward_agent = true
 
     config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
       if hostname = (vm.ssh_info && vm.ssh_info[:host])
-        `vagrant ssh -- "hostname -I"`.strip!
+        `vagrant ssh -- "hostname -I"`.strip.split(' ').last
       end
     end
 
