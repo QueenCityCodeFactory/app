@@ -10,23 +10,23 @@
 - name: Install PHP and Dependencies
   apt:
     pkg:
-      - php7.4-fpm
-      - php7.4-cli
-      - php7.4-mysql
-      - php7.4-intl
-      - php7.4-ldap
-      - php7.4-sqlite3
-      - php7.4-curl
-      - php7.4-xsl
-      - php7.4-imap
-      - php7.4-imagick
-      - php7.4-memcached
-      - php7.4-zip
-      - php7.4-mbstring
-      - php7.4-json
-      - php7.4-soap
-      - php7.4-xml
-      - php7.4-gd
+      - php8.0-fpm
+      - php8.0-cli
+      - php8.0-mysql
+      - php8.0-intl
+      - php8.0-ldap
+      - php8.0-sqlite3
+      - php8.0-curl
+      - php8.0-xsl
+      - php8.0-imap
+      - php8.0-imagick
+      - php8.0-memcached
+      - php8.0-zip
+      - php8.0-mbstring
+      - php-json
+      - php8.0-soap
+      - php8.0-xml
+      - php8.0-gd
     state: present
 
 - name: Install Composer
@@ -36,15 +36,15 @@
     mode: 0755
     validate_certs: no
 
-- name: Configure php7.4-fpm pool.
+- name: Configure php8.0-fpm pool.
   lineinfile:
-    dest: "/etc/php/7.4/fpm/pool.d/www.conf"
+    dest: "/etc/php/8.0/fpm/pool.d/www.conf"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
   with_items:
     - regexp: "^listen.?=.+$"
-      line: "listen = /run/php/php7.4-fpm.sock"
+      line: "listen = /run/php/php8.0-fpm.sock"
     - regexp: "^pm.max_children.?=.+$"
       line: "pm.max_children = 120"
     - regexp: "^pm.start_servers.?=.+$"
@@ -56,9 +56,9 @@
     - regexp: "^;pm.max_requests.?=.+$"
       line: "pm.max_requests = 500"
 
-- name: Configure php7.4 php.ini
+- name: Configure php8.0 php.ini
   lineinfile:
-    dest: "/etc/php/7.4/fpm/php.ini"
+    dest: "/etc/php/8.0/fpm/php.ini"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
@@ -67,4 +67,4 @@
       line: "post_max_size = 108M"
     - regexp: "^upload_max_filesize.?=.+$"
       line: "upload_max_filesize = 100M"
-  notify: restart php7.4-fpm
+  notify: restart php8.0-fpm

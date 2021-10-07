@@ -14,7 +14,7 @@ else
 end
 
 Vagrant.configure("2") do |config|
-  config.hostmanager.enabled = true
+  config.hostmanager.enabled = false
   config.hostmanager.manage_host = true
   config.hostmanager.manage_guest = false
   config.hostmanager.ignore_private_ip = false
@@ -22,6 +22,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.define settings['name'] do |node|
     node.vm.box = settings['box']
+
     node.vm.provider "vmware_fusion" do |v, override|
       v.vmx["memsize"] = settings['memory']
       v.vmx["numvcpus"] = settings['cpus']
@@ -59,11 +60,13 @@ Vagrant.configure("2") do |config|
     #Fix for Ansible bug resulting in an encoding error
     ENV['PYTHONIOENCODING'] = "utf-8"
 
+    node.vm.provision :hostmanager
     node.vm.provision "ansible" do |ansible|
       ansible.limit = 'all'
       ansible.verbose = 'v'
       ansible.playbook = settings['ansible']['playbook']
       ansible.inventory_path = settings['ansible']['host']
+      ansible.raw_arguments = Shellwords.shellsplit(ENV["ANSIBLE_ARGS"]) if ENV["ANSIBLE_ARGS"]
       ansible.compatibility_mode = '2.0'
     end
 

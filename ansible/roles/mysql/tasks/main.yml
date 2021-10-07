@@ -1,7 +1,7 @@
 ---
 - name: Download MySQL Apt Repo Setup Tool
   get_url:
-    url: https://dev.mysql.com/get/mysql-apt-config_0.8.15-1_all.deb
+    url: https://dev.mysql.com/get/mysql-apt-config_0.8.19-1_all.deb
     dest: /tmp/mysql-apt-config.deb
     force: false
 
@@ -42,14 +42,3 @@
   service:
     name: mysql
     state: started
-
-- name: Configure mysqld.cnf
-  lineinfile:
-    dest: "/etc/mysql/mysql.conf.d/mysqld.cnf"
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    state: present
-  with_items:
-    - regexp: "^bind-address.*=.+$"
-      line: "#bind-address           = 127.0.0.1"
-  notify: restart mysql

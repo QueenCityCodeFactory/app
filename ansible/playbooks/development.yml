@@ -66,9 +66,9 @@
         name: nginx
         state: restarted
 
-    - name: restart php7.4-fpm
+    - name: restart php8.0-fpm
       service:
-        name: php7.4-fpm
+        name: php8.0-fpm
         state: restarted
 
     - name: Create MySQL vagrant user
@@ -91,19 +91,13 @@
       become: yes
       become_user: root
 
-    # - name: Configure mysqld.cnf - turn on general log for development
-    #   lineinfile:
-    #     dest: "/etc/mysql/mysql.conf.d/mysqld.cnf"
-    #     regexp: "{{ item.regexp }}"
-    #     line: "{{ item.line }}"
-    #     state: present
-    #     backrefs: yes
-    #   with_items:
-    #     - regexp: "^#general_log.*=.+$"
-    #       line: "general_log             = 1"
-    #     - regexp: "^#general_log_file.*=.+$"
-    #       line: "general_log_file        = /var/log/mysql/mysql.log"
-    #   notify: restart mysql
+    - name: Check if app migrations have already been ran
+      shell: "mysql -e \"SELECT * FROM information_schema.tables WHERE table_schema = 'cakephp_app'\";"
+      become: yes
+      become_user: root
+      when: mysql_installed is defined
+      register: migrationran # above query returns nothing when no tables exist
 
-    #- name: run migrations
-    #  command: "{{ app_path }}/bin/cake migrations migrate -v"
+    - name: Run app migrations if we haven't
+      command: "{{ app_path }}/bin/cake migrations migrate"
+      when: migrationran.stdout == "" # stdout of the variable we just registered will be empty when no tables exist
