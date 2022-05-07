@@ -66,9 +66,9 @@
         name: nginx
         state: restarted
 
-    - name: restart php8.0-fpm
+    - name: restart php8.1-fpm
       service:
-        name: php8.0-fpm
+        name: php8.1-fpm
         state: restarted
 
     - name: Create MySQL vagrant user
@@ -98,6 +98,6 @@
       when: mysql_installed is defined
       register: migrationran # above query returns nothing when no tables exist
 
-    - name: Run app migrations if we haven't
-      command: "{{ app_path }}/bin/cake migrations migrate"
+    - name: Run app migrations
+      command: "{{ app_path }}/bin/cake migrations migrate -vvvv"
       when: migrationran.stdout == "" # stdout of the variable we just registered will be empty when no tables exist
