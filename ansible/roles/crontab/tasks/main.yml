@@ -1,0 +1,12 @@
+---
+- name: Loop Over and Create temp Template for each desired crontab
+  template:
+    src: concat.j2
+    dest: "{{ app_path }}/ansible/roles/crontab/templates/{{ item }}.txt"
+  loop: "{{ active_crontab_files | list }}"
+
+- name: Loop Over and Create final file for each crontab file
+  template:
+    src: "{{ item }}.txt"
+    dest: "{{ app_path }}/cron.d/{{ item }}"
+  loop: "{{ active_crontab_files | list }}"

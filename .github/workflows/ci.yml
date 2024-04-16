@@ -9,21 +9,22 @@ on:
   pull_request:
     branches:
       - '*'
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   testsuite:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['7.4', '8.0', '8.1']
+        php-version: ['7.4', '8.0', '8.1', '8.2']
     name: PHP ${{ matrix.php-version }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -34,11 +35,7 @@ jobs:
 
     - name: Composer install
       run: |
-        if [[ ${{ matrix.php-version }} == '8.1' ]]; then
-          composer update --ignore-platform-reqs
-        else
-          composer update
-        fi
+        composer update
         composer run-script post-install-cmd --no-interaction
 
     - name: Run PHPUnit
@@ -49,11 +46,11 @@ jobs:
         DATABASE_TEST_URL: sqlite://./testdb.sqlite
 
   coding-standard:
-    name: Coding Standard
-    runs-on: ubuntu-18.04
+    name: Coding Standard & Static Analysis
+    runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -61,29 +58,14 @@ jobs:
         php-version: '7.4'
         extensions: mbstring, intl
         coverage: none
+        tools: cs2pr, phpstan:1
 
     - name: Composer install
       run: composer install
 
     - name: Run PHP CodeSniffer
-      run: composer cs-check
-
-  static-analysis:
-    name: Static Analysis
-    runs-on: ubuntu-18.04
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '7.4'
-        extensions: mbstring, intl
-        coverage: none
-
-    - name: Composer install
-      run: composer require --dev phpstan/phpstan:^1.0.0
+      run: vendor/bin/phpcs --report=checkstyle | cs2pr
 
     - name: Run phpstan
-      run: vendor/bin/phpstan
+      if: always()
+      run: phpstan

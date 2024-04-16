@@ -1,7 +1,8 @@
 ---
 - name: Add PPA
-  apt_repository:
-    repo: "ppa:ondrej/php"
+  shell: "add-apt-repository -y ppa:ondrej/php"
+  become: yes
+  become_user: root
 
 - name: Apt Update
   apt:
@@ -10,41 +11,42 @@
 - name: Install PHP and Dependencies
   apt:
     pkg:
-      - php8.1-fpm
-      - php8.1-cli
-      - php8.1-mysql
-      - php8.1-intl
-      - php8.1-ldap
-      - php8.1-sqlite3
-      - php8.1-curl
-      - php8.1-xsl
-      - php8.1-imap
-      - php8.1-imagick
-      - php8.1-memcached
-      - php8.1-zip
-      - php8.1-mbstring
+      - php8.3-fpm
+      - php8.3-cli
+      - php8.3-mysql
+      - php8.3-intl
+      - php8.3-ldap
+      - php8.3-sqlite3
+      - php8.3-curl
+      - php8.3-xsl
+      - php8.3-imap
+      - php8.3-imagick
+      - php8.3-memcached
+      - php8.3-zip
+      - php8.3-mbstring
       - php-json
-      - php8.1-soap
-      - php8.1-xml
-      - php8.1-gd
+      - php8.3-soap
+      - php8.3-xml
+      - php8.3-gd
     state: present
 
 - name: Install Composer
   get_url:
-    url: https://getcomposer.org/composer-stable.phar
+    url: https://getcomposer.org/composer.phar
     dest: /usr/local/bin/composer
     mode: 0755
     validate_certs: no
 
-- name: Configure php8.1-fpm pool.
+- name: Configure php8.3-fpm pool.
   lineinfile:
-    dest: "/etc/php/8.1/fpm/pool.d/www.conf"
+    dest: "/etc/php/8.3/fpm/pool.d/www.conf"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
+    backrefs: yes
   with_items:
     - regexp: "^listen.?=.+$"
-      line: "listen = /run/php/php8.1-fpm.sock"
+      line: "listen = /run/php/php8.3-fpm.sock"
     - regexp: "^pm.max_children.?=.+$"
       line: "pm.max_children = 120"
     - regexp: "^pm.start_servers.?=.+$"
@@ -56,15 +58,20 @@
     - regexp: "^;pm.max_requests.?=.+$"
       line: "pm.max_requests = 500"
 
-- name: Configure php8.1 php.ini
+- name: Configure php8.3 php.ini
   lineinfile:
-    dest: "/etc/php/8.1/fpm/php.ini"
+    dest: "/etc/php/8.3/fpm/php.ini"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
+    backrefs: yes
   with_items:
     - regexp: "^post_max_size.?=.+$"
       line: "post_max_size = 108M"
     - regexp: "^upload_max_filesize.?=.+$"
       line: "upload_max_filesize = 100M"
-  notify: restart php8.1-fpm
+    - regexp: "^session.gc_probability.?=.+$"
+      line: "session.gc_probability = 1"
+    - regexp: "^;max_input_vars.?=.+$"
+      line: "max_input_vars = 3000"
+  notify: restart php8.3-fpm

@@ -1,4 +1,5 @@
 ---
+mysql_environment: development
 nginx_environment: development
 nginx_ssl_crt:
   - cakephp.app.local.crt
@@ -61,3 +62,7 @@ nginx_sites_available:
   - cakephp.app.local.conf
 nginx_sites_enabled:
   - cakephp.app.local.conf
+active_crontab_files:
+  development:
+    - concat/initial.tab
+    - concat/clear_tmp_files.tab

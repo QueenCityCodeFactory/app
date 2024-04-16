@@ -1,0 +1,19 @@
+---
+- name: 'Download libssl1.1 arm64'
+  get_url:
+    url: http://ports.ubuntu.com/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.22_arm64.deb
+    dest: /root/libssl.deb
+    force: false
+    validate_certs: no # this is fucked up
+  when: ansible_architecture == 'aarch64'
+
+- name: 'Download libssl1.1 x86_64'
+  get_url:
+    url: http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.22_amd64.deb
+    dest: /root/libssl.deb
+    force: false
+    validate_certs: no # this is fucked up
+  when: ansible_architecture == 'x86_64'
+
+- name: 'Install libssl1.1'
+  command: dpkg -i /root/libssl.deb

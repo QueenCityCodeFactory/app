@@ -1,0 +1,30 @@
+---
+- name: Install golang-go
+  apt:
+    pkg:
+      - golang-go
+    state: present
+    update_cache: yes
+
+- name: Install Mailhog
+  shell: "go install github.com/mailhog/MailHog@latest"
+  become: yes
+  become_user: root
+
+- name: Copy Mailhog to /usr/local/bin
+  copy:
+    src: /root/go/bin/MailHog
+    dest: /usr/local/bin/mailhog
+    owner: root
+    group: root
+    mode: 0755
+    remote_src: yes
+
+- name: Create Service File
+  template:
+    src: "mailhog.service"
+    dest: /etc/systemd/system/mailhog.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: start and enable mailhog

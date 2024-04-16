@@ -12,14 +12,17 @@
     app_name: "cakephp-app"
     become_alternate_user: "vagrant"
   roles:
-    - system
-    - ntp
-    - php
-    - nginx
-    - mysql
-    - memcached
-    - wkhtmltopdf
-    - nodejs
+    - {role: "system", tags: "system"}
+    - {role: "libssl", tags: "libssl"}
+    - {role: "ntp", tags: "ntp"}
+    - {role: "php", tags: "php"}
+    - {role: "nginx", tags: "nginx"}
+    - {role: "wkhtmltopdf", tags: "wkhtmltopdf"}
+    - {role: "mysql", tags: "mysql"}
+    - {role: "memcached", tags: "memcached"}
+    - {role: "nodejs", tags: "nodejs"}
+    - {role: "crontab", tags: "crontab"}
+    - {role: "mailhog", tags: "mailhog"}
   tasks:
     - name: DONT PANIC NTP and VM Should Accept Traveling to the Future by more than 1000s
       lineinfile:
@@ -29,7 +32,7 @@
 
     - name: make a symbolic link for application crontab file
       file:
-        src: "{{ app_path }}/crontab"
+        src: "{{ app_path }}/cron.d/development"
         dest: "/etc/cron.d/{{ app_name }}"
         state: link
 
@@ -53,6 +56,13 @@
       args:
         executable: /bin/bash
 
+    - name: Create CakePHP dev config from default
+      copy:
+        src: "{{ app_path }}/config/app_local.example.php"
+        dest: "{{ app_path }}/config/app_local.php"
+        remote_src: yes
+        force: no
+
     - name: Create /var/files/
       file:
         path: "/var/files/"
@@ -66,38 +76,43 @@
         name: nginx
         state: restarted
 
-    - name: restart php8.1-fpm
+    - name: restart php8.3-fpm
       service:
-        name: php8.1-fpm
+        name: php8.3-fpm
         state: restarted
 
     - name: Create MySQL vagrant user
       shell: "mysql -e \"CREATE USER IF NOT EXISTS 'vagrant'@'%' IDENTIFIED WITH mysql_native_password BY 'vagrant'\";"
       become: yes
       become_user: root
+      when: mysql_server_installed
 
     - name: Grant the MySQL vagrant user some permissions
       shell: "mysql -e \"GRANT ALL on *.* to 'vagrant'@'%'WITH GRANT OPTION\";"
       become: yes
       become_user: root
+      when: mysql_server_installed
 
     - name: Flushing the MySQL Privileges
       shell: "mysql -e \"FLUSH PRIVILEGES\";"
       become: yes
       become_user: root
+      when: mysql_server_installed
 
     - name: Create the MySQL Database for the project
       shell: "mysql -e \"CREATE DATABASE IF NOT EXISTS cakephp_app DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_general_ci;\";"
       become: yes
       become_user: root
+      when: mysql_server_installed
 
     - name: Check if app migrations have already been ran
       shell: "mysql -e \"SELECT * FROM information_schema.tables WHERE table_schema = 'cakephp_app'\";"
       become: yes
       become_user: root
-      when: mysql_installed is defined
+      when: mysql_server_installed
       register: migrationran # above query returns nothing when no tables exist
 
     - name: Run app migrations
       command: "{{ app_path }}/bin/cake migrations migrate -vvvv"
       when: migrationran.stdout == "" # stdout of the variable we just registered will be empty when no tables exist
+      ignore_errors: yes

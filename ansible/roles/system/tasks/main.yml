@@ -14,7 +14,6 @@
   apt:
     pkg:
       - curl
-      - python-pycurl
       - software-properties-common
       - htop
       - wget
@@ -28,6 +27,9 @@
       - libssl-dev
       - unzip
       - pandoc
+      - certbot
+      - python3-certbot-nginx
+      - run-one
     state: present
 
 - name: make a symbolic link for www

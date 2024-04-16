@@ -1,44 +1,45 @@
 ---
-- name: Download MySQL Apt Repo Setup Tool
-  get_url:
-    url: https://dev.mysql.com/get/mysql-apt-config_0.8.22-1_all.deb
-    dest: /tmp/mysql-apt-config.deb
-    force: false
-
-- name: ensure mysql upstream repository package is configured
-  debconf:
-    name: mysql-apt-config
-    question: "mysql-apt-config/{{ item.question }}"
-    value: "{{ item.value }}"
-    vtype: "{{ item.vtype | default ('select') }}"
-  with_items:
-    - question: select-server
-      value: "mysql-8.0"
-  become: yes
-  become_user: root
-
-- name: Run MySQL Apt Repo Setup Tool
-  apt:
-    deb: /tmp/mysql-apt-config.deb
-  become: yes
-  become_user: root
-
-- name: Apt Update
-  apt:
-    update_cache: yes
-    cache_valid_time: 3600
-
-- name: Install MySQL packages
+- name: Install MySQL Server & Client packages
   apt:
     pkg:
       - mysql-server
       - mysql-client
     state: present
     update_cache: yes
+  when: mysql_environment != 'production'
   environment:
     DEBIAN_FRONTEND: noninteractive
+  register: mysql_server_installed
+  notify: start mysql
 
-- name: start mysql
-  service:
-    name: mysql
-    state: started
+- name: Install MySQL Client Package
+  apt:
+    pkg:
+      - mysql-client
+    state: present
+    update_cache: yes
+  when: mysql_environment == 'production'
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+  register: mysql_client_installed
+
+- name: MySQL configurations for XL AWS Instance
+  blockinfile:
+    path: /etc/mysql/mysql.conf.d/mysqld.cnf
+    block: |
+      max_allowed_packet=67108864
+      key_buffer_size=64M
+      max_allowed_packet=64M
+      join_buffer_size=512K
+      max_connections=3000
+      innodb_buffer_pool_size=12G
+      innodb_log_file_size=1G
+      innodb_buffer_pool_instances=12
+  when: mysql_environment != 'production'
+
+- name: Install Alternative for /etc/alternatives/my.cnf
+  command: 'update-alternatives --install /etc/mysql/my.cnf my.cnf /etc/mysql/mysql.cnf 200'
+  when: mysql_environment != 'production'
+  become: yes
+  become_user: root
+  notify: restart mysql

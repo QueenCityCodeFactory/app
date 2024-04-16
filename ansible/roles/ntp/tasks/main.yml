@@ -7,5 +7,12 @@
       - ntpdate
     state: present
 
+- name: Copy configuration file
+  template:
+    src: ntp.conf
+    dest: /etc/ntp.conf
+    backup: yes
+  notify: restart ntp
+
 - name: set timeone to UTC
   command: timedatectl set-timezone UTC

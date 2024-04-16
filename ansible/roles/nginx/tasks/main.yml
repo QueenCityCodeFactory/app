@@ -1,7 +1,8 @@
 ---
 - name: Add PPA
-  apt_repository:
-    repo: "ppa:ondrej/nginx-mainline"
+  shell: "add-apt-repository -y ppa:ondrej/nginx-mainline"
+  become: yes
+  become_user: root
 
 - name: Apt Update
   apt:
@@ -9,9 +10,9 @@
 
 - name: Install Nginx
   apt:
-    name: nginx
-    update_cache: yes
-    cache_valid_time: 3600
+    pkg:
+      - nginx
+    state: present
 
 - name: Create SSL Directories (ssl.crt)
   file:
@@ -34,6 +35,7 @@
     mode: 0644
     backup: yes
   with_items: "{{ nginx_ssl_crt }}"
+  when: nginx_environment == 'development'
 
 - name: COPY SSL KEYS
   copy:
@@ -44,6 +46,7 @@
     mode: 0644
     backup: yes
   with_items: "{{ nginx_ssl_key }}"
+  when: nginx_environment == 'development'
 
 - name: Sites Available Configs
   template:

@@ -60,3 +60,5 @@ yarn-error.log
 # PHP Intel
 .phpintel
 *.mwb.bak
+/cron.d/*
+/ansible/roles/crontab/templates/*.txt

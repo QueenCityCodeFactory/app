@@ -1,5 +1,5 @@
 ---
-memory: 64
+memory: 512
 tcp_port: 11_211
 udp_port: 11_211
 listen: 0.0.0.0

@@ -4,6 +4,10 @@ def fail_with_message(msg)
   fail Vagrant::Errors::VagrantError.new, msg
 end
 
+def is_arm64()
+  `uname -m` == "arm64" || `/usr/bin/arch -64 sh -c "sysctl -in sysctl.proc_translated"`.strip() == "0"
+end
+
 config_path = __dir__
 config_file = File.join(config_path, 'vagrant.yml')
 
@@ -21,14 +25,18 @@ Vagrant.configure("2") do |config|
   config.hostmanager.include_offline = true
 
   config.vm.define settings['name'] do |node|
-    node.vm.box = settings['box']
 
-    node.vm.provider "vmware_fusion" do |v, override|
-      v.vmx["memsize"] = settings['memory']
-      v.vmx["numvcpus"] = settings['cpus']
-      v.whitelist_verified = true
-      v.ssh_info_public = true
-      v.port_forward_network_pause = 10
+    if is_arm64()
+      node.vm.box = settings['arm64_box']
+    else
+      node.vm.box = settings['box']
+    end
+
+    node.vm.provider "parallels" do |prl|
+      prl.name = settings['vm_name']
+      prl.memory = settings['memory']
+      prl.cpus = settings['cpus']
+      prl.linked_clone = false
     end
 
     node.vm.provider "virtualbox" do |v, override|
@@ -38,9 +46,18 @@ Vagrant.configure("2") do |config|
       v.customize ["modifyvm", :id, "--cpus", settings['cpus']]
     end
 
-    # Prefer vmware_fusion over virtualbox
-    node.vm.provider "vmware_fusion"
+    node.vm.provider "vmware_fusion" do |v, override|
+      v.vmx["memsize"] = settings['memory']
+      v.vmx["numvcpus"] = settings['cpus']
+      v.whitelist_verified = true
+      v.ssh_info_public = true
+      v.port_forward_network_pause = 10
+    end
+
+    # preference
+    node.vm.provider "parallels"
     node.vm.provider "virtualbox"
+    node.vm.provider "vmware_fusion"
 
     node.vm.network "private_network", type: "dhcp"
     node.vm.hostname = settings['hostname']
@@ -55,7 +72,7 @@ Vagrant.configure("2") do |config|
     #Add any alias:
     node.hostmanager.aliases = settings['aliases']
 
-    node.vm.synced_folder ".", settings['app_path'], :nfs => true, :mount_options => ['nolock,vers=3,udp,noatime,actimeo=1']
+    node.vm.synced_folder ".", settings['app_path'], type: "nfs", nfs_udp: false, mount_options: ['nolock,noatime,actimeo=1']
 
     #Fix for Ansible bug resulting in an encoding error
     ENV['PYTHONIOENCODING'] = "utf-8"
