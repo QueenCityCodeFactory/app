@@ -54,6 +54,12 @@ class Application extends BaseApplication
                 (new TableLocator())->allowFallbackClass(false)
             );
         }
+
+        // $this->addPlugin('Authentication');
+        // $this->addPlugin('Authorization');
+        $this->addPlugin('ButterCream', ['bootstrap' => true, 'routes' => false]);
+        $this->addPlugin('CakePdf', ['bootstrap' => true, 'routes' => true]);
+        $this->addPlugin('CakeSpreadsheet', ['bootstrap' => true, 'routes' => true]);
     }
 
     /**

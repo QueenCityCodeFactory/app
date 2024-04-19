@@ -16,7 +16,9 @@ declare(strict_types=1);
  */
 namespace App\Controller;
 
-use Cake\Controller\Controller;
+use ButterCream\Controller\Controller;
+use Cake\Core\Configure;
+use Cake\Event\EventInterface;
 
 /**
  * Application Controller
@@ -48,5 +50,22 @@ class AppController extends Controller
          * see https://book.cakephp.org/5/en/controllers/components/form-protection.html
          */
         //$this->loadComponent('FormProtection');
+        //$this->loadComponent('Authentication.Authentication');
+        //$this->loadComponent('Authorization.Authorization');
+    }
+
+    /**
+     * Controller Before Filter Callback
+     *
+     * @param \Cake\Event\EventInterface $event The Event Object
+     * @return void
+     */
+    public function beforeFilter(EventInterface $event)
+    {
+        parent::beforeFilter($event);
+
+        if ($this->request->is('ajax')) {
+            Configure::write('debug', false);
+        }
     }
 }

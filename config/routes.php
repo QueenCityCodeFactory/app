@@ -51,11 +51,19 @@ return function (RouteBuilder $routes): void {
 
     $routes->scope('/', function (RouteBuilder $builder): void {
         /*
+         * Router Extensions
+         */
+        $builder->setExtensions(['json', 'xml', 'pdf', 'xlsx']);
+
+        /*
          * Here, we are connecting '/' (base path) to a controller called 'Pages',
          * its action called 'display', and we pass a param to select the view file
          * to use (in this case, templates/Pages/home.php)...
          */
         $builder->connect('/', ['controller' => 'Pages', 'action' => 'display', 'home']);
+        //$builder->connect('/login', ['controller' => 'Users', 'action' => 'login'], ['_name' => 'login']);
+        //$builder->connect('/logout', ['controller' => 'Users', 'action' => 'logout'], ['_name' => 'logout']);
+        //$builder->connect('/ping', ['controller' => 'Users', 'action' => 'ping', '_ext' => 'json'], ['_name' => 'ping']);
 
         /*
          * ...and connect the rest of 'Pages' controller's URLs.

@@ -1,0 +1,9 @@
+# This file contains cron jobs specific to this project. The purpose of this file is to keep the cron jobs version controlled
+# This file should be symbolically linked to in the /etc/cron.d directory.
+# For example, run ln -s /var/www/panda/crontab /etc/cron.d/panda
+
+TZ="America/New_York"
+MAILTO=""
+
+# Every 30 minutes, delete tmp file uploads older than 6 hours
+*/30 * * * * root find /var/www/cakephp-app/tmp/files/* -mmin +360 -exec rm {} \; > /dev/null 2>&1

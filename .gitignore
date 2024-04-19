@@ -2,7 +2,9 @@
 ##########################
 /config/app_local.php
 /config/.env
+/config/Migrations/schema-dump-default.lock
 /logs/*
+/node_modules/*
 /tmp/*
 /vendor/*
 
@@ -14,7 +16,8 @@
 .Spotlight-V100
 .Trashes
 # Icon must end with two \r
-Icon
+Icon
+
 ehthumbs.db
 Thumbs.db
 .directory
@@ -41,6 +44,7 @@ tests.sqlite
 nbproject/*
 # Visual Studio Code
 .vscode
+.history
 # nova
 .nova
 # Sass preprocessor
@@ -50,3 +54,11 @@ nbproject/*
 # yarn
 yarn-debug.log
 yarn-error.log
+
+# Vagrant
+.vagrant
+# PHP Intel
+.phpintel
+*.mwb.bak
+/cron.d/*
+/ansible/roles/crontab/templates/*.txt

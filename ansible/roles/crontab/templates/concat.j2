@@ -1,0 +1,4 @@
+{% for i in active_crontab_files[item] %}
+{{ lookup('file', i) }}
+
+{% endfor %}

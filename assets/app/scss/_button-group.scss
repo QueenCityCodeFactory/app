@@ -1,0 +1,6 @@
+.btn-group-xs > .btn { @extend .btn-xs; }
+
+.btn-xs + .dropdown-toggle-split {
+  padding-right: $btn-padding-x-xs * .75;
+  padding-left: $btn-padding-x-xs * .75;
+}

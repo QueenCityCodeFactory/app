@@ -1,0 +1,38 @@
+.card {
+    margin-bottom: 20px;
+    .card-header {
+        .card-header-buttons {
+            line-height: 1;
+        }
+    }
+    .card-footer {
+        .record-counter {
+            margin: 0;
+            font-size: .6875rem;
+            font-style: italic;
+            color: $gray-600;
+            line-height: 1.75rem;
+        }
+    }
+}
+
+.card-columns {
+  @include media-breakpoint-only(lg) {
+    column-count: 4;
+  }
+  @include media-breakpoint-only(xl) {
+    column-count: 5;
+  }
+}
+
+.card-flex-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.card-flex {
+    flex: 1;
+    min-width: 256px;
+    margin: 10px;
+    transition: all .2s ease-in-out;
+}

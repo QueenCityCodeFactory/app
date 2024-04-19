@@ -1,0 +1,15 @@
+---
+box: "bento/ubuntu-22.04"
+arm64_box: "bento/ubuntu-22.04-arm64"
+name: cakephp-app
+hostname: "cakephp-app-vagrant-box"
+vm_name: "CakePHP App"
+app_path: "/var/www/cakephp-app/"
+aliases:
+  - cakephp.app.local
+memory: "2048"
+cpus: "2"
+ansible:
+  playbook: "ansible/playbooks/development.yml"
+  host: "ansible/inventories/development"
+message: "To browse go to https://cakephp.app.local"

@@ -1,6 +1,8 @@
 {
-    "name": "cakephp/app",
-    "description": "CakePHP skeleton app",
+    "name": "queencitycodefactory/app",
+    "description": "CakePHP skeleton app with Vagrant/Ansible",
+    "homepage": "https://www.willettstech.com",
+    "type": "project",
     "license": "MIT",
     "type": "project",
     "homepage": "https://cakephp.org",
@@ -9,7 +11,10 @@
         "cakephp/cakephp": "^5.0.1",
         "cakephp/migrations": "^4.0.0",
         "cakephp/plugin-installer": "^2.0",
-        "mobiledetect/mobiledetectlib": "^4.8.03"
+        "league/flysystem": "3.x-dev",
+        "league/flysystem-local": "^3.25",
+        "mobiledetect/mobiledetectlib": "^4.8.03",
+        "queencitycodefactory/butter-cream": "dev-cake-5.x"
     },
     "require-dev": {
         "cakephp/bake": "^3.0.0",
@@ -54,5 +59,7 @@
         "cs-fix": "phpcbf --colors -p",
         "stan": "phpstan analyze",
         "test": "phpunit --colors=always"
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

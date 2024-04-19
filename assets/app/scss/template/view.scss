@@ -1,0 +1,24 @@
+body {
+    &.view {
+        #calendar {
+            padding: 12px;
+            margin: auto;
+            max-width: 1200px;
+            min-height: 950px;
+            border: 1px solid #eee;
+            border-top: 4px solid #FAC863;
+            border-radius: .25rem;
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,.1);
+
+            -webkit-animation: delayfadein 1.5s; /* Safari, Chrome and Opera > 12.1 */
+               -moz-animation: delayfadein 1.5s; /* Firefox < 16 */
+                -ms-animation: delayfadein 1.5s; /* Internet Explorer */
+                 -o-animation: delayfadein 1.5s; /* Opera < 12.1 */
+                    animation: delayfadein 1.5s;
+
+            a.fc-event {
+                color: white;
+            }
+        }
+    }
+}

@@ -1,0 +1,12 @@
+.card {
+    .table-responsive {
+        .table {
+            th.actions, td.actions {
+                text-align: right;
+            }
+            td.actions {
+                line-height: 1px;
+            }
+        }
+    }
+}

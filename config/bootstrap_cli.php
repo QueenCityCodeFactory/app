@@ -33,3 +33,6 @@ if (Configure::check('Log.debug')) {
 if (Configure::check('Log.error')) {
     Configure::write('Log.error.file', 'cli-error');
 }
+
+// Set the default theme to ButterCream for Baking
+Configure::write('Bake.theme', 'ButterCream');

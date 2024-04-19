@@ -1,0 +1,19 @@
+---
+- name: Install Memcached and Dependencies
+  apt:
+    pkg:
+      - memcached
+    state: present
+
+- name: Copy configuration file
+  template:
+    src: memcached.conf
+    dest: /etc/memcached.conf
+    backup: yes
+  notify: restart memcached
+
+- name: Start Memcached
+  service:
+    name: memcached
+    state: started
+    enabled: true

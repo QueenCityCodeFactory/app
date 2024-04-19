@@ -1,0 +1,2 @@
+# Every 30 minutes, delete tmp file uploads older than 6 hours
+*/30 * * * * root find {{ app_path }}/tmp/files/* -mmin +360 ! -name "empty" -exec rm {} \; > /dev/null 2>&1

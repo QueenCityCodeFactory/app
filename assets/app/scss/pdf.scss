@@ -1,0 +1,42 @@
+body {
+    &.pdf-page {
+        hr.signature-line {
+            /* Adjust margins for flexbox */
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 0;
+            border: none;
+            height: 1px;
+            /* Set the hr color */
+            color: #333;
+            /* old IE */
+            background-color: #333;
+            /* Modern Browsers */
+        }
+
+        .pdf-underline {
+            border-bottom: 1px solid black;
+            padding-left: 5px;
+            flex-grow: 1;
+        }
+
+        .x-small-text {
+            font-size: x-small;
+        }
+
+        .small-text {
+            font-size: small;
+        }
+
+        .medium-text {
+            font-size: medium;
+        }
+
+        .table.table-ellipsis tbody td {
+            max-width: 400px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+}

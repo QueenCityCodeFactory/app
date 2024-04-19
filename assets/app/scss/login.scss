@@ -1,0 +1,11 @@
+body {
+    &.login-page {
+        height: 100%;
+        $gradient-base-color: #000428;
+        $gradient-secondary-color: #004e92;
+
+        background: $gradient-base-color;  /* fallback for old browsers */
+        background: -webkit-linear-gradient(to top, $gradient-secondary-color, $gradient-base-color);  /* Chrome 10-25, Safari 5.1-6 */
+        background: linear-gradient(to top, $gradient-secondary-color, $gradient-base-color); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    }
+}
