@@ -342,10 +342,10 @@ SessionMonitor.prototype = {
           html: false,
           buttons: [
               {
-                  button: '<button id="session-expired-modal-logout-btn" type="button" class="btn btn-danger">Logout <i class="fas fa-sign-out-alt"></i></button>'
+                  button: '<button id="session-expired-modal-logout-btn" type="button" class="btn btn-danger">Logout <i class="fa-solid fa-sign-out-alt"></i></button>'
               },
               {
-                  button: '<button id="session-expired-modal-login-btn" type="button" class="btn btn-success"><i class="fas fa-sign-in-alt"></i> Login</button>'
+                  button: '<button id="session-expired-modal-login-btn" type="button" class="btn btn-success"><i class="fa-solid fa-sign-in-alt"></i> Login</button>'
               }
           ],
           login: true,
@@ -481,7 +481,7 @@ SessionMonitor.prototype = {
               html: 'Your session will expire in <span id="session-remaining-time">3 min 00 sec</span> due to inactivity.',
               buttons: [
                   {
-                      button: '<button id="session-warning-modal-logout-btn" type="button" class="btn btn-danger">Logout <i class="fas fa-sign-out-alt"></i></button>'
+                      button: '<button id="session-warning-modal-logout-btn" type="button" class="btn btn-danger">Logout <i class="fa-solid fa-sign-out-alt"></i></button>'
                   },
                   {
                       button: '<button id="session-warning-modal-continue-btn" type="button" class="btn btn-success">Stay Logged In</button>'

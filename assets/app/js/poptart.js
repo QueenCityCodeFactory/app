@@ -4,15 +4,15 @@ var PopTart = {
     toastType: {
         danger: {
             class: 'danger',
-            icon: 'fas fa-skull-crossbones'
+            icon: 'fa-solid fa-skull-crossbones'
         },
         error: {
             class: 'danger',
-            icon: 'fas fa-dumpster-fire'
+            icon: 'fa-solid fa-dumpster-fire'
         },
         info: {
             class: 'info',
-            icon: 'fas fa-info-circle'
+            icon: 'fa-solid fa-info-circle'
         },
         success: {
             class: 'success',
@@ -20,11 +20,11 @@ var PopTart = {
         },
         warning: {
             class: 'warning',
-            icon: 'fas fa-exclamation-triangle'
+            icon: 'fa-solid fa-exclamation-triangle'
         },
         primary: {
             class: 'primary',
-            icon: 'fas fa-bullhorn'
+            icon: 'fa-solid fa-bullhorn'
         }
     },
 
