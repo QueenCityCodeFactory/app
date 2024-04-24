@@ -84,17 +84,17 @@ var PopTart = {
     },
     notify: function(options) {
         var container = this.getContainer();
-        var toastElement = $('<div class="toast ml-auto" role="alert" aria-live="assertive" aria-atomic="true"></div>');
+        var toastElement = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true"></div>');
         var headerElement;
         var bodyElement;
 
         if (options && options.hasOwnProperty('title') && options.title) {
             headerElement = $('<div class="toast-header"></div>');
-            var titleElement = $('<strong class="mr-auto">' + options.title + '</strong>');
-            var buttonElement = $('<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close"><span aria-hidden="true">&times;</span></button>');
+            var titleElement = $('<strong class="me-auto">' + options.title + '</strong>');
+            var buttonElement = $('<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>');
 
             if (options.hasOwnProperty('icon') && options.icon) {
-                headerElement.append('<span class="mr-2"><em class="' + options.icon + '"></em></span>');
+                headerElement.append('<span class="me-2"><em class="' + options.icon + '"></em></span>');
             }
 
             headerElement.append(titleElement);

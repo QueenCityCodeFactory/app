@@ -36,7 +36,7 @@ var ClearSearchForm = {
                     PopTart.error('We have encountered an error! Please refresh and try again!', 'Search Error');
                 });
             } else {
-                searchForm.submit();
+                searchForm.trigger('submit');
             }
         });
     }

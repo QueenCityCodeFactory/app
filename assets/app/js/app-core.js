@@ -40,13 +40,13 @@ var AppCore = {
         var self = this;
         // Need to attach this on ajax loaded content
         if (!("ontouchstart" in window || window.DocumentTouch && document instanceof DocumentTouch)) {
-            $('[data-toggle="tooltip"]').tooltip();
+            $('[data-bs-toggle="tooltip"]').tooltip();
         }
     },
 
     popover: function (options) {
         var self = this;
-        $('[data-toggle="popover"]').popover();
+        $('[data-bs-toggle="popover"]').popover();
     },
 
     htmlPopover: function (options) {
@@ -70,7 +70,7 @@ var AppCore = {
             var placeholder = $(this).attr('placeholder');
             $(this).select2({
                 placeholder: placeholder,
-                theme: 'bootstrap4'
+                theme: 'bootstrap-5'
             });
         });
     },

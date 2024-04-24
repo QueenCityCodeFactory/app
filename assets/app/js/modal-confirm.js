@@ -61,7 +61,7 @@ var ModalConfirm = {
                     html: message,
                     buttons: [
                         {
-                            button: '<button type="button" class="btn btn-default js-modal-button-close" data-dismiss="modal">No</button>'
+                            button: '<button type="button" class="btn btn-default js-modal-button-close" data-bs-dismiss="modal">No</button>'
                         },
                         {
                             button: '<button type="button" class="btn btn-danger js-modal-button-submit"' + dataFormName + dataHref + '>Yes</button>'
@@ -71,13 +71,13 @@ var ModalConfirm = {
                 $(content).modal('show').on('hidden.bs.modal', function (event) {
                     $(this).remove();
                 }).on('shown.bs.modal', function (event) {
-                    $('.js-modal-button-close').focus();
+                    $('.js-modal-button-close').trigger('focus');
                 });
             } else if (formName) {
-                $('form[name="' + $(this).data('form-name') + '"]').submit();
+                $('form[name="' + $(this).data('form-name') + '"]').trigger('submit');
             }
 
-            $(this).blur();
+            $(this).trigger('blur');
         });
 
         /**
@@ -88,7 +88,7 @@ var ModalConfirm = {
             var formName = $(this).data('form-name');
             var href = $(this).data('href');
             if (formName) {
-                $('form[name="' + $(this).data('form-name') + '"]').submit();
+                $('form[name="' + $(this).data('form-name') + '"]').trigger('submit');
             } else if (href) {
                 $(location).attr('href', href);
             }
