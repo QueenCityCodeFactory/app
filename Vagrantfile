@@ -4,10 +4,6 @@ def fail_with_message(msg)
   fail Vagrant::Errors::VagrantError.new, msg
 end
 
-def is_arm64()
-  `uname -m` == "arm64" || `/usr/bin/arch -64 sh -c "sysctl -in sysctl.proc_translated"`.strip() == "0"
-end
-
 config_path = __dir__
 config_file = File.join(config_path, 'vagrant.yml')
 
@@ -25,12 +21,7 @@ Vagrant.configure("2") do |config|
   config.hostmanager.include_offline = true
 
   config.vm.define settings['name'] do |node|
-
-    if is_arm64()
-      node.vm.box = settings['arm64_box']
-    else
-      node.vm.box = settings['box']
-    end
+    node.vm.box = settings['box']
 
     node.vm.provider "parallels" do |prl|
       prl.name = settings['vm_name']
@@ -86,6 +77,11 @@ Vagrant.configure("2") do |config|
       ansible.raw_arguments = Shellwords.shellsplit(ENV["ANSIBLE_ARGS"]) if ENV["ANSIBLE_ARGS"]
       ansible.compatibility_mode = '2.0'
     end
+
+    node.trigger.after :destroy do |trigger|
+      trigger.info  = "Running hostmanager to clean up hosts file"
+      trigger.run =  {inline: "vagrant hostmanager"}
+    end;
 
     node.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
 

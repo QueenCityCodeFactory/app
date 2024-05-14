@@ -1,6 +1,5 @@
 ---
-box: "bento/ubuntu-22.04"
-arm64_box: "bento/ubuntu-22.04-arm64"
+box: "bento/ubuntu-24.04"
 name: cakephp-app
 hostname: "cakephp-app-vagrant-box"
 vm_name: "CakePHP App"
