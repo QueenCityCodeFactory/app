@@ -29,6 +29,7 @@
       - pandoc
       - certbot
       - python3-certbot-nginx
+      - ssl-cert
       - run-one
     state: present
 

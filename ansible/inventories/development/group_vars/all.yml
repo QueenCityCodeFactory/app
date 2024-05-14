@@ -1,5 +1,4 @@
 ---
-mysql_environment: development
 nginx_environment: development
 nginx_ssl_crt:
   - cakephp.app.local.crt
