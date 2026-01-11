@@ -1,5 +1,5 @@
 [development]
-cakephp-app-vagrant-box
+cakephp-app-box
 
 [development:vars]
 ansible_python_interpreter=/usr/bin/python3

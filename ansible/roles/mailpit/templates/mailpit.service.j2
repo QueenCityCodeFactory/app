@@ -1,0 +1,14 @@
+[Unit]
+Description=Mailpit SMTP and Web UI
+After=network.target
+
+[Service]
+ExecStart={{ mailpit_install_dir }}/mailpit \
+  --listen {{ mailpit_ui_bind | default('0.0.0.0:8025') }} \
+  --smtp {{ mailpit_smtp_bind | default('0.0.0.0:1025') }}
+Restart=always
+User={{ mailpit_user | default('nobody') }}
+Group={{ mailpit_group | default('nogroup') }}
+
+[Install]
+WantedBy=multi-user.target

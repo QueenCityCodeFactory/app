@@ -1,0 +1,6 @@
+---
+- name: start and enable mailpit
+  systemd:
+    name: mailpit
+    enabled: yes
+    state: restarted

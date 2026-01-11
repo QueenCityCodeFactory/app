@@ -1,0 +1,28 @@
+---
+- name: Install chrony
+  apt:
+    name: chrony
+    state: present
+    update_cache: yes
+
+- name: Enable and start chrony
+  systemd:
+    name: chrony
+    enabled: yes
+    state: started
+
+- name: Set timezone to UTC
+  command: timedatectl set-timezone UTC
+
+- name: Enable NTP sync via timedatectl (optional safety net)
+  command: timedatectl set-ntp true
+  ignore_errors: true
+
+- name: Install chrony config with USNO servers
+  template:
+    src: chrony.conf.j2
+    dest: /etc/chrony/chrony.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart chrony

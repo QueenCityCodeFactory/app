@@ -20,6 +20,7 @@ use Cake\Core\Configure;
 use Cake\Core\ContainerInterface;
 use Cake\Datasource\FactoryLocator;
 use Cake\Error\Middleware\ErrorHandlerMiddleware;
+use Cake\Event\EventManagerInterface;
 use Cake\Http\BaseApplication;
 use Cake\Http\Middleware\BodyParserMiddleware;
 use Cake\Http\Middleware\CsrfProtectionMiddleware;
@@ -48,12 +49,8 @@ class Application extends BaseApplication
         // Call parent to load bootstrap from files.
         parent::bootstrap();
 
-        if (PHP_SAPI !== 'cli') {
-            FactoryLocator::add(
-                'Table',
-                (new TableLocator())->allowFallbackClass(false)
-            );
-        }
+        // By default, does not allow fallback classes.
+        FactoryLocator::add('Table', (new TableLocator())->allowFallbackClass(false));
 
         // $this->addPlugin('Authentication');
         // $this->addPlugin('Authorization');
@@ -109,5 +106,21 @@ class Application extends BaseApplication
      */
     public function services(ContainerInterface $container): void
     {
+        // Allow your Tables to be dependency injected
+        //$container->delegate(new \Cake\ORM\Locator\TableContainer());
+    }
+
+    /**
+     * Register custom event listeners here
+     *
+     * @param \Cake\Event\EventManagerInterface $eventManager
+     * @return \Cake\Event\EventManagerInterface
+     * @link https://book.cakephp.org/5/en/core-libraries/events.html#registering-listeners
+     */
+    public function events(EventManagerInterface $eventManager): EventManagerInterface
+    {
+        // $eventManager->on(new SomeCustomListenerClass());
+
+        return $eventManager;
     }
 }

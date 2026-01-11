@@ -1,7 +1,7 @@
 ---
 - name: Add PPA
   shell: "add-apt-repository -y ppa:ondrej/php"
-  become: yes
+  become: true
   become_user: root
 
 - name: Apt Update
@@ -11,23 +11,23 @@
 - name: Install PHP and Dependencies
   apt:
     pkg:
-      - php8.3-fpm
-      - php8.3-cli
-      - php8.3-mysql
-      - php8.3-intl
-      - php8.3-ldap
-      - php8.3-sqlite3
-      - php8.3-curl
-      - php8.3-xsl
-      - php8.3-imap
-      - php8.3-imagick
-      - php8.3-memcached
-      - php8.3-zip
-      - php8.3-mbstring
+      - php8.4-fpm
+      - php8.4-cli
+      - php8.4-mysql
+      - php8.4-intl
+      - php8.4-ldap
+      - php8.4-sqlite3
+      - php8.4-curl
+      - php8.4-xsl
+      - php8.4-imap
+      - php8.4-imagick
+      - php8.4-memcached
+      - php8.4-zip
+      - php8.4-mbstring
       - php-json
-      - php8.3-soap
-      - php8.3-xml
-      - php8.3-gd
+      - php8.4-soap
+      - php8.4-xml
+      - php8.4-gd
     state: present
 
 - name: Install Composer
@@ -37,16 +37,16 @@
     mode: 0755
     validate_certs: no
 
-- name: Configure php8.3-fpm pool.
+- name: Configure php8.4-fpm pool.
   lineinfile:
-    dest: "/etc/php/8.3/fpm/pool.d/www.conf"
+    dest: "/etc/php/8.4/fpm/pool.d/www.conf"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
     backrefs: yes
   with_items:
     - regexp: "^listen.?=.+$"
-      line: "listen = /run/php/php8.3-fpm.sock"
+      line: "listen = /run/php/php8.4-fpm.sock"
     - regexp: "^pm.max_children.?=.+$"
       line: "pm.max_children = 120"
     - regexp: "^pm.start_servers.?=.+$"
@@ -58,9 +58,9 @@
     - regexp: "^;pm.max_requests.?=.+$"
       line: "pm.max_requests = 500"
 
-- name: Configure php8.3 php.ini
+- name: Configure php8.4 php.ini
   lineinfile:
-    dest: "/etc/php/8.3/fpm/php.ini"
+    dest: "/etc/php/8.4/fpm/php.ini"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
@@ -74,4 +74,4 @@
       line: "session.gc_probability = 1"
     - regexp: "^zend.assertions.?=.+$"
       line: "zend.assertions = 1"
-  notify: restart php8.3-fpm
+  notify: restart php8.4-fpm

@@ -16,7 +16,7 @@
     owner: "{{ become_alternate_user }}"
 
 - name: Install nvm
-  become: yes
+  become: true
   become_user: "{{ become_alternate_user }}"
   git:
   args:
@@ -25,7 +25,7 @@
     version: "{{ nvm_version }}"
 
 - name: Source nvm in ~/.profile
-  become: yes
+  become: true
   become_user: "{{ become_alternate_user }}"
   lineinfile: >
     dest=~/{{ item }}
@@ -37,7 +37,7 @@
 
 - name: Install Node {{ nodejs_version }}
   shell: "source ~/.nvm/nvm.sh && nvm install {{ nodejs_version }}"
-  become: yes
+  become: true
   become_user: "{{ become_alternate_user }}"
   args:
     executable: /bin/bash
@@ -47,7 +47,7 @@
 - name: Check if {{ nodejs_version }} is the default node version
   shell: "source ~/.nvm/nvm.sh && nvm ls | grep -e 'default -> {{ nodejs_version }}'"
   register: nvm_check_default
-  become: yes
+  become: true
   become_user: "{{ become_alternate_user }}"
   args:
     executable: /bin/bash
@@ -56,7 +56,7 @@
 
 - name: Set default node version to {{ nodejs_version }}
   shell: "source ~/.nvm/nvm.sh && nvm alias default {{ nodejs_version }}"
-  become: yes
+  become: true
   become_user: "{{ become_alternate_user }}"
   args:
     executable: /bin/bash

@@ -1,0 +1,55 @@
+- name: Get latest Mailpit release if not defined
+  uri:
+    url: https://api.github.com/repos/axllent/mailpit/releases/latest
+    return_content: yes
+  when: mailpit_version == ""
+  register: mailpit_latest_release
+
+- name: Set mailpit version from GitHub if not provided
+  set_fact:
+    mailpit_version: "{{ mailpit_latest_release.json.tag_name }}"
+  when: mailpit_version == ""
+
+- name: Set Mailpit architecture suffix
+  set_fact:
+    mailpit_arch: "{{ mailpit_arch_map[ansible_architecture] | default('amd64') }}"
+
+- name: Set Mailpit archive URL
+  set_fact:
+    mailpit_download_url: "https://github.com/axllent/mailpit/releases/download/{{ mailpit_version }}/mailpit-linux-{{ mailpit_arch }}.tar.gz"
+
+- name: Create temp directory for Mailpit download
+  tempfile:
+    state: directory
+    suffix: mailpit
+  register: mailpit_tmp
+
+- name: Download Mailpit tarball
+  get_url:
+    url: "{{ mailpit_download_url }}"
+    dest: "{{ mailpit_tmp.path }}/mailpit.tar.gz"
+    mode: '0644'
+
+- name: Extract Mailpit binary
+  unarchive:
+    src: "{{ mailpit_tmp.path }}/mailpit.tar.gz"
+    dest: "{{ mailpit_tmp.path }}"
+    remote_src: yes
+    creates: "{{ mailpit_tmp.path }}/mailpit"
+
+- name: Install Mailpit binary
+  copy:
+    src: "{{ mailpit_tmp.path }}/mailpit"
+    dest: "{{ mailpit_install_dir }}/mailpit"
+    mode: '0755'
+    remote_src: yes
+  notify: start and enable mailpit
+
+- name: Create systemd service for Mailpit
+  template:
+    src: mailpit.service.j2
+    dest: /etc/systemd/system/mailpit.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify: start and enable mailpit

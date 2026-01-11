@@ -1,0 +1,10 @@
+---
+mailpit_arch_map:
+  x86_64: amd64
+  aarch64: arm64
+
+mailpit_install_dir: /usr/local/bin
+mailpit_version: ""  # leave empty to pull latest
+
+mailpit_ui_bind: "0.0.0.0:8025"
+mailpit_smtp_bind: "0.0.0.0:1025"
