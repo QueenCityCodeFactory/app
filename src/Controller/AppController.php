@@ -57,7 +57,7 @@ class AppController extends Controller
     /**
      * Controller Before Filter Callback
      *
-     * @param \Cake\Event\EventInterface $event The Event Object
+     * @param \Cake\Event\EventInterface<$this> $event The Event Object
      * @return void
      */
     public function beforeFilter(EventInterface $event): void
