@@ -4,8 +4,6 @@
     "homepage": "https://www.willettstech.com",
     "type": "project",
     "license": "MIT",
-    "type": "project",
-    "homepage": "https://cakephp.org",
     "require": {
         "php": ">=8.2",
         "cakephp/cakephp": "^5.3.0",
