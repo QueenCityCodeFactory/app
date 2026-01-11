@@ -7,7 +7,7 @@ end
 config_path = __dir__
 config_file = File.join(config_path, 'vagrant.yml')
 
-if File.exists?(config_file)
+if File.exist?(config_file)
   settings = YAML.load_file(config_file)
 else
   fail_with_message "#{config_file} was not found. Please set `config_path` in your Vagrantfile."
