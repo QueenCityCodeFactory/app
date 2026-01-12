@@ -47,8 +47,8 @@ return [
              */
             //'port' => 'non_standard_port_number',
 
-            'username' => 'vagrant',
-            'password' => 'vagrant',
+            'username' => 'ubuntu',
+            'password' => 'ubuntu',
 
             'database' => 'cakephp_app',
             /*
@@ -69,8 +69,8 @@ return [
         'test' => [
             'host' => 'localhost',
             //'port' => 'non_standard_port_number',
-            'username' => 'vagrant',
-            'password' => 'vagrant',
+            'username' => 'ubuntu',
+            'password' => 'ubuntu',
             'database' => 'test_cakephp_app',
             //'schema' => 'myapp',
             'url' => env('DATABASE_TEST_URL', 'sqlite://127.0.0.1/tmp/tests.sqlite'),

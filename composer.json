@@ -1,6 +1,6 @@
 {
     "name": "queencitycodefactory/app",
-    "description": "CakePHP skeleton app with Vagrant/Ansible",
+    "description": "Willetts Technology's Custom CakePHP skeleton app",
     "homepage": "https://www.willettstech.com",
     "type": "project",
     "license": "MIT",

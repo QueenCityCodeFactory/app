@@ -12,7 +12,7 @@
 
 - name: Set Mailpit architecture suffix
   set_fact:
-    mailpit_arch: "{{ mailpit_arch_map[ansible_architecture] | default('amd64') }}"
+    mailpit_arch: "{{ mailpit_arch_map[ansible_facts['architecture']] | default('amd64') }}"
 
 - name: Set Mailpit archive URL
   set_fact:
