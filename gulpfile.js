@@ -1,7 +1,7 @@
 const prefix = require('autoprefixer');
 const beep = require('beepbeep');
 const minify = require('cssnano');
-const del = require('del');
+const { deleteAsync } = require('del');
 const fancylog = require('fancy-log');
 const gulp = require('gulp');
 const cleanCss = require('gulp-clean-css');
@@ -129,8 +129,8 @@ function handleError(level, error) {
  * Clean Fonts - Remove the fonts
  * @param Function done callback to signal completion
  */
-function cleanFonts(done) {
-    del.sync(fontsToClean);
+async function cleanFonts(done) {
+    await deleteAsync(fontsToClean);
     done();
 }
 
@@ -188,10 +188,7 @@ function buildStyle(name, files) {
         .pipe(concat(name + '.css'))
         .pipe(postcss([
             postcssImport(),
-            prefix({
-                cascade: true,
-                remove: true
-            })
+            prefix()
         ]))
         .pipe(gulp.dest('./webroot/css'))
         .pipe(rename({suffix: '.min'}))
@@ -283,15 +280,21 @@ function lintFiles(name, files) {
  */
 function cacheBuster(done) {
     if (cb.js || cb.css) {
-        var config = gulp.src(['./config/app.php']);
         var time = Math.round(+new Date()/1000) + 60;
+        var stream = gulp.src(['./config/app.php']);
+
         if (cb.js) {
-            config.pipe(replace(/'jsCB' => '(.*)',?\n/, "'jsCB' => '" + time + "',\n"));
+            stream = stream.pipe(replace(/'jsCB' => '(.*)',?\n/, "'jsCB' => '" + time + "',\n"));
         }
         if (cb.css) {
-            config.pipe(replace(/'cssCB' => '(.*)',?\n/, "'cssCB' => '" + time + "',\n"))
+            stream = stream.pipe(replace(/'cssCB' => '(.*)',?\n/, "'cssCB' => '" + time + "',\n"));
         }
-        config.pipe(gulp.dest('./config/'));
+
+        stream = stream.pipe(gulp.dest('./config/'));
+
+        cb.js = false;
+        cb.css = false;
+        return stream;
     }
     cb.js = false;
     cb.css = false;

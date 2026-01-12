@@ -23,6 +23,7 @@
     repo: https://github.com/nvm-sh/nvm.git
     dest: ~/.nvm
     version: "{{ nvm_version }}"
+    recursive: no
 
 - name: Source nvm in ~/.profile
   become: true
