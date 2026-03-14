@@ -7,7 +7,7 @@
     "require": {
         "php": ">=8.2",
         "cakephp/cakephp": "^5.3.0",
-        "cakephp/migrations": "^4.0.0",
+        "cakephp/migrations": "^5.0.3",
         "cakephp/plugin-installer": "^2.0",
         "league/flysystem": "3.x-dev",
         "league/flysystem-local": "^3.25",
