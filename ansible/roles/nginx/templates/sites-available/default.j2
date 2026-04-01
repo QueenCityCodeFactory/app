@@ -1,0 +1,74 @@
+server {
+    listen 80{{ ' default_server' if item.default_server | default(false) else '' }};
+    server_name {{ item.server_name }};
+
+    # Let's Encrypt ACME challenge (used in production with certbot)
+    location ^~ /.well-known/acme-challenge/ {
+        default_type "text/plain";
+        root /var/www/html;
+        break;
+    }
+
+    location = /.well-known/acme-challenge/ {
+        return 404;
+    }
+
+    return 301 https://{{ item.server_name }}$request_uri;
+}
+
+server {
+    listen 443 ssl{{ ' default_server' if item.default_server | default(false) else '' }};
+
+{% if ssl_mode | default('self-signed') == 'letsencrypt' %}
+    ssl_certificate {{ item.ssl_certificate | default('/etc/letsencrypt/live/' + item.server_name + '/fullchain.pem') }};
+    ssl_certificate_key {{ item.ssl_certificate_key | default('/etc/letsencrypt/live/' + item.server_name + '/privkey.pem') }};
+{% else %}
+    ssl_certificate {{ item.ssl_certificate | default('/etc/nginx/ssl.crt/' + item.server_name + '.crt') }};
+    ssl_certificate_key {{ item.ssl_certificate_key | default('/etc/nginx/ssl.key/' + item.server_name + '.key') }};
+{% endif %}
+
+    access_log off;
+    error_log  /var/log/nginx/{{ item.server_name }}.error.log warn;
+
+    root {{ item.document_root }};
+    index index.php;
+
+    server_name {{ item.server_name }};
+
+    # Block common attack paths
+    location ~ ^/(wp-login\.php|wp-admin|xmlrpc\.php|wp-content) {
+        access_log off;
+        return 404;
+    }
+
+    # Block access to .env files
+    location ~ /\.env {
+        access_log off;
+        deny all;
+        return 404;
+    }
+
+    # CakePHP Framework Rewrite
+    location / {
+        try_files $uri $uri/ /index.php?$args;
+    }
+
+    # Pass the PHP scripts to FastCGI server
+    location ~ \.php$ {
+        fastcgi_pass unix:/run/php/{{ item.php_fpm_version }}-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_pass_header Set-Cookie;
+        fastcgi_ignore_headers Cache-Control Expires;
+        fastcgi_intercept_errors on;
+        fastcgi_connect_timeout 240;
+        fastcgi_send_timeout 240;
+        fastcgi_read_timeout 240;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    # Deny access to .htaccess files, git & svn repositories, etc
+    location ~ /\.(ht|git|svn) {
+        deny all;
+    }
+}

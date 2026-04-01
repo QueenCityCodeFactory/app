@@ -1,5 +1,5 @@
 [development]
-cakephp-app-box
+cakephp-app-box ansible_connection=local
 
 [development:vars]
 ansible_python_interpreter=/usr/bin/python3

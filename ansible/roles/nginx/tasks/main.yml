@@ -1,8 +1,20 @@
 ---
-- name: Add PPA
+- name: Add ondrej/nginx PPA (with retry logic)
   shell: "add-apt-repository -y ppa:ondrej/nginx"
+  register: nginx_ppa_result
+  retries: 3
+  delay: 30
+  until: nginx_ppa_result is succeeded
+  failed_when: false
   become: true
   become_user: root
+
+- name: Warn if PPA addition failed
+  debug:
+    msg: |
+      WARNING: Could not add ondrej/nginx PPA (Launchpad may be down).
+      Falling back to default Ubuntu nginx package.
+  when: nginx_ppa_result is failed
 
 - name: Apt Update
   apt:
@@ -14,72 +26,29 @@
       - nginx
     state: present
 
-- name: Create SSL Directories (ssl.crt)
-  file:
-    path: /etc/nginx/ssl.crt
-    state: directory
-    mode: 0755
-
-- name: Create SSL Directories (ssl.key)
-  file:
-    path: /etc/nginx/ssl.key
-    state: directory
-    mode: 0755
-
-- name: COPY SSL CERTIFICATES
-  template:
-    src: "{{ nginx_environment }}/ssl.crt/{{ item }}"
-    dest: "/etc/nginx/ssl.crt/{{ item }}"
-    owner: root
-    group: root
-    mode: 0644
-    backup: yes
-  with_items: "{{ nginx_ssl_crt }}"
-  when: nginx_environment == 'development'
-
-- name: COPY SSL KEYS
-  copy:
-    content: "{{ item.content }}"
-    dest: "/etc/nginx/ssl.key/{{ item.filename }}"
-    owner: root
-    group: root
-    mode: 0644
-    backup: yes
-  with_items: "{{ nginx_ssl_key }}"
-  when: nginx_environment == 'development'
-
 - name: Sites Available Configs
   template:
-    src: "{{ nginx_environment }}/sites-available/{{ item }}"
-    dest: "/etc/nginx/sites-available/{{ item }}"
+    src: "sites-available/{{ item.config }}.j2"
+    dest: "/etc/nginx/sites-available/{{ item.server_name }}.conf"
     owner: root
     group: root
     mode: 0644
     backup: yes
-  with_items: "{{ nginx_sites_available }}"
+  with_items: "{{ nginx_configurations }}"
 
-- name: Create the Sites Enabled Symlinks for the site configs
+- name: Create the Sites Enabled Symlinks
   file:
-    src: "/etc/nginx/sites-available/{{ item }}"
-    dest: "/etc/nginx/sites-enabled/{{ item }}"
+    src: "/etc/nginx/sites-available/{{ item.server_name }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ item.server_name }}.conf"
     state: link
-  with_items: "{{ nginx_sites_enabled }}"
+  with_items: "{{ nginx_configurations }}"
 
-- name: Removing Default Symlink
+- name: Remove default site symlink
   file:
     path: /etc/nginx/sites-enabled/default
     state: absent
 
-- name: Nginx Config
-  template:
-    src: "dhparam.pem"
-    dest: /etc/ssl/certs/dhparam.pem
-    owner: root
-    group: root
-    mode: 0644
-    backup: yes
-
-- name: Nginx Config
+- name: Deploy nginx.conf
   template:
     src: "nginx.conf"
     dest: /etc/nginx/nginx.conf

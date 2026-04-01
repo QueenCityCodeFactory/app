@@ -84,8 +84,8 @@ return [
      * - Trick grab current timestamp from http://www.currenttimestamp.com/
      */
     'CacheBuster' => [
-        'jsCB' => '1713448225',
-        'cssCB' => '1713448225',
+        'jsCB' => '1775060861',
+        'cssCB' => '1775060861',
     ],
 
     /*
@@ -207,7 +207,7 @@ return [
      */
     'Error' => [
         'errorLevel' => E_ALL,
-        'exceptionRenderer' => ExceptionRenderer::class,
+        'exceptionRenderer' => PHP_SAPI === 'cli' ? null : ExceptionRenderer::class,
         'skipLog' => ['ButterCream\Http\Exception\HttpException'],
         'log' => true,
         'trace' => true,

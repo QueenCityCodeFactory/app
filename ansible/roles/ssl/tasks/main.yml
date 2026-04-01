@@ -1,0 +1,108 @@
+---
+- name: Create SSL directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  loop:
+    - /etc/nginx/ssl.crt
+    - /etc/nginx/ssl.key
+
+# ─────────────────────────────────────────────────────────────
+# Self-signed SSL (development)
+# ─────────────────────────────────────────────────────────────
+
+- name: Check if SSL certificate exists
+  stat:
+    path: "/etc/nginx/ssl.crt/{{ ssl_domain }}.crt"
+  register: ssl_cert_file
+  when: ssl_mode == "self-signed"
+
+- name: Check if SSL key exists
+  stat:
+    path: "/etc/nginx/ssl.key/{{ ssl_domain }}.key"
+  register: ssl_key_file
+  when: ssl_mode == "self-signed"
+
+- name: Generate self-signed SSL certificate
+  command: >
+    openssl req -x509 -nodes -days 3650
+    -newkey rsa:2048
+    -keyout /etc/nginx/ssl.key/{{ ssl_domain }}.key
+    -out /etc/nginx/ssl.crt/{{ ssl_domain }}.crt
+    -subj "/C={{ ssl_country }}/ST={{ ssl_state }}/L={{ ssl_city }}/O={{ ssl_organization }}/CN={{ ssl_domain }}"
+    -addext "subjectAltName=DNS:{{ ssl_domain }}"
+  when: ssl_mode == "self-signed" and (not ssl_cert_file.stat.exists or not ssl_key_file.stat.exists)
+
+- name: Set SSL certificate permissions
+  file:
+    path: "/etc/nginx/ssl.crt/{{ ssl_domain }}.crt"
+    owner: root
+    group: root
+    mode: 0644
+  when: ssl_mode == "self-signed" and (not ssl_cert_file.stat.exists or not ssl_key_file.stat.exists)
+
+- name: Set SSL key permissions
+  file:
+    path: "/etc/nginx/ssl.key/{{ ssl_domain }}.key"
+    owner: root
+    group: root
+    mode: 0600
+  when: ssl_mode == "self-signed" and (not ssl_cert_file.stat.exists or not ssl_key_file.stat.exists)
+
+# ─────────────────────────────────────────────────────────────
+# Let's Encrypt SSL (production)
+# ─────────────────────────────────────────────────────────────
+
+- name: Install certbot and nginx plugin
+  apt:
+    pkg:
+      - certbot
+      - python3-certbot-nginx
+    state: present
+  when: ssl_mode == "letsencrypt"
+
+- name: Check if Let's Encrypt certificate exists
+  stat:
+    path: "/etc/letsencrypt/live/{{ ssl_domain }}/fullchain.pem"
+  register: letsencrypt_cert_file
+  when: ssl_mode == "letsencrypt"
+
+- name: Obtain Let's Encrypt certificate
+  command: >
+    certbot certonly --nginx
+    --non-interactive
+    --agree-tos
+    --email {{ ssl_letsencrypt_email }}
+    -d {{ ssl_domain }}
+  when: ssl_mode == "letsencrypt" and not letsencrypt_cert_file.stat.exists
+
+- name: Enable certbot auto-renewal timer
+  systemd:
+    name: certbot.timer
+    enabled: yes
+    state: started
+  when: ssl_mode == "letsencrypt"
+
+# ─────────────────────────────────────────────────────────────
+# DH Parameters (shared)
+# ─────────────────────────────────────────────────────────────
+
+- name: Check if dhparam exists
+  stat:
+    path: /etc/ssl/certs/dhparam.pem
+  register: dhparam_file
+
+- name: Generate dhparam (this takes a moment)
+  command: openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+  when: not dhparam_file.stat.exists
+
+- name: Set dhparam permissions
+  file:
+    path: /etc/ssl/certs/dhparam.pem
+    owner: root
+    group: root
+    mode: 0644
+  when: not dhparam_file.stat.exists

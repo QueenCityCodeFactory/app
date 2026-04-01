@@ -8,21 +8,40 @@
   become: true
   become_user: root
   vars:
-    app_path: "/var/www/cakephp-app"
-    app_name: "cakephp-app"
     become_alternate_user: "ubuntu"
+
+  pre_tasks:
+    - name: Validate required variables are defined
+      ansible.builtin.assert:
+        that:
+          - app_name is defined and app_name != "CHANGEME"
+          - app_path is defined and app_path != "/var/www/CHANGEME"
+          - app_domain is defined and app_domain != "CHANGEME.test"
+          - db_name is defined and db_name != "CHANGEME"
+          - db_user is defined and db_user != "CHANGEME"
+          - db_password is defined and db_password != "CHANGEME"
+          - ssl_domain is defined and ssl_domain != "CHANGEME.test"
+        fail_msg: |
+          ❌ Required variables are missing or still set to placeholder values!
+
+          Copy the example config and update all CHANGEME values:
+            cp ansible/inventories/development/group_vars/all.yml.example \
+               ansible/inventories/development/group_vars/all.yml
+
+          Then edit all.yml with your project-specific values.
+
   roles:
     - {role: "system", tags: "system"}
-    - {role: "libssl", tags: "libssl"}
     - {role: "chrony", tags: "chrony"}
     - {role: "php", tags: "php"}
+    - {role: "ssl", tags: "ssl"}
     - {role: "nginx", tags: "nginx"}
-    - {role: "wkhtmltopdf", tags: "wkhtmltopdf"}
     - {role: "mysql", tags: "mysql"}
     - {role: "memcached", tags: "memcached"}
     - {role: "nodejs", tags: "nodejs"}
     - {role: "crontab", tags: "crontab"}
     - {role: "mailpit", tags: "mailpit"}
+
   tasks:
     - name: make a symbolic link for application crontab file
       file:
@@ -37,7 +56,26 @@
         working_dir: "{{ app_path }}"
       become: true
       become_user: "{{ become_alternate_user }}"
-      ignore_errors: true
+      register: composer_result
+
+    - name: Set writable permissions on tmp and logs directories
+      file:
+        path: "{{ app_path }}/{{ item }}"
+        state: directory
+        mode: "0777"
+        owner: "{{ become_alternate_user }}"
+        group: www-data
+        recurse: no
+      loop:
+        - logs
+        - tmp
+        - tmp/cache
+        - tmp/cache/models
+        - tmp/cache/persistent
+        - tmp/cache/views
+        - tmp/sessions
+        - tmp/tests
+      when: composer_result is succeeded
 
     - name: Install gulp globally
       shell: "source ~/.nvm/nvm.sh && npm install -g gulpjs/gulp-cli"
@@ -78,13 +116,13 @@
         name: php8.4-fpm
         state: restarted
 
-    - name: Create MySQL ubuntu user
-      shell: "mysql -e \"CREATE USER IF NOT EXISTS 'ubuntu'@'%' IDENTIFIED WITH mysql_native_password BY 'ubuntu'\";"
+    - name: Create MySQL application user
+      shell: "mysql -e \"CREATE USER IF NOT EXISTS '{{ db_user }}'@'%' IDENTIFIED WITH mysql_native_password BY '{{ db_password }}'\";"
       become: true
       become_user: root
 
-    - name: Grant the MySQL ubuntu user some permissions
-      shell: "mysql -e \"GRANT ALL on *.* to 'ubuntu'@'%' WITH GRANT OPTION\";"
+    - name: Grant the MySQL application user permissions
+      shell: "mysql -e \"GRANT ALL on *.* to '{{ db_user }}'@'%' WITH GRANT OPTION\";"
       become: true
       become_user: root
 
@@ -94,17 +132,23 @@
       become_user: root
 
     - name: Create the MySQL Database for the project
-      shell: "mysql -e \"CREATE DATABASE IF NOT EXISTS cakephp_app DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_general_ci;\";"
+      shell: "mysql -e \"CREATE DATABASE IF NOT EXISTS {{ db_name }} DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_general_ci;\";"
       become: true
       become_user: root
 
     - name: Check if app migrations have already been ran
-      shell: "mysql -e \"SELECT * FROM information_schema.tables WHERE table_schema = 'cakephp_app'\";"
+      shell: "mysql -e \"SELECT * FROM information_schema.tables WHERE table_schema = '{{ db_name }}'\";"
       become: true
       become_user: root
-      register: migrationran # above query returns nothing when no tables exist
+      register: migrationran
+
+    - name: Check if migration files exist
+      find:
+        paths: "{{ app_path }}/config/Migrations"
+        patterns: "*.php"
+      register: migration_files
+      when: composer_result is succeeded and migrationran.stdout == ""
 
     - name: Run app migrations
       command: "{{ app_path }}/bin/cake migrations migrate -vvvv"
-      when: migrationran.stdout == "" # stdout of the variable we just registered will be empty when no tables exist
-      ignore_errors: true
+      when: composer_result is succeeded and migrationran.stdout == "" and migration_files.matched > 0

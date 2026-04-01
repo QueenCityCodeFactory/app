@@ -1,0 +1,13 @@
+---
+# SSL mode: "self-signed" for local development, "letsencrypt" for production
+ssl_mode: "self-signed"
+ssl_domain: "cakephp.app.test"
+
+# Organization details used in self-signed certificate subject
+ssl_organization: "Development"
+ssl_country: "US"
+ssl_state: "State"
+ssl_city: "City"
+
+# Let's Encrypt settings (used when ssl_mode is "letsencrypt")
+ssl_letsencrypt_email: ""

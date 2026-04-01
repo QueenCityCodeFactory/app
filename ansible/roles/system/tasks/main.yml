@@ -18,15 +18,13 @@
       - htop
       - wget
       - ghostscript
-      - mcrypt
       - imagemagick
       - vim
       - build-essential
       - rsync
       - git-core
-      - libssl-dev
+      - openssl
       - unzip
-      - pandoc
       - certbot
       - python3-certbot-nginx
       - ssl-cert

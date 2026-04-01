@@ -15,8 +15,7 @@ const postcss = require('gulp-postcss');
 const postcssImport = require('postcss-import');
 const rename = require('gulp-rename');
 const replace = require('gulp-replace');
-const sourcemaps = require('gulp-sourcemaps');
-const uglify = require('gulp-uglify');
+const terser = require('gulp-terser');
 const wait = require('gulp-wait');
 const mergeStream = require('merge-stream');
 const path = require('path');
@@ -235,7 +234,7 @@ function buildScript(name, files) {
         .pipe(concat(name + '.js'))
         .pipe(gulp.dest('./webroot/js'))
         .pipe(rename({suffix: '.min'}))
-        .pipe(uglify({compress: false}))
+        .pipe(terser({compress: false}))
         .pipe(plumber(onError))
         .pipe(gulp.dest('./webroot/js'))
         .pipe(through.obj(function(file, enc, callback) {
