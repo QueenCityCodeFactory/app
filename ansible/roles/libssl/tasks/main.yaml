@@ -1,19 +1,19 @@
 ---
-- name: 'Download libssl1.1 arm64'
-  get_url:
-    url: http://ports.ubuntu.com/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_arm64.deb
-    dest: /root/libssl.deb
-    force: false
-    validate_certs: no
-  when: ansible_facts["architecture"] == 'aarch64'
+- name: Set libssl1.1 download URL based on architecture
+  set_fact:
+    libssl_download_url: >-
+      {% if ansible_facts["architecture"] == 'aarch64' %}
+        http://ports.ubuntu.com/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_arm64.deb
+      {% else %}
+        http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+      {% endif %}
 
-- name: 'Download libssl1.1 x86_64'
+- name: 'Download libssl1.1'
   get_url:
-    url: http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+    url: "{{ libssl_download_url }}"
     dest: /root/libssl.deb
     force: false
     validate_certs: no
-  when: ansible_facts["architecture"] == 'x86_64'
 
 - name: 'Install libssl1.1'
   command: dpkg -i /root/libssl.deb

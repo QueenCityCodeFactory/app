@@ -12,21 +12,21 @@
       - xfonts-base
     state: present
 
-- name: 'Download WkHtmlToPdf arm64'
-  get_url:
-    url: https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_arm64.deb
-    dest: /root/wkhtmltopdf.deb
-    force: false
-    validate_certs: no
-  when: ansible_facts["architecture"] == 'aarch64'
+- name: Set WkHtmlToPdf download URL based on architecture
+  set_fact:
+    wkhtmltopdf_download_url: >-
+      {% if ansible_facts["architecture"] == 'aarch64' %}
+        https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_arm64.deb
+      {% else %}
+        https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb
+      {% endif %}
 
-- name: 'Download WkHtmlToPdf x86_64'
+- name: 'Download WkHtmlToPdf'
   get_url:
-    url: https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb
+    url: "{{ wkhtmltopdf_download_url }}"
     dest: /root/wkhtmltopdf.deb
     force: false
     validate_certs: no
-  when: ansible_facts["architecture"] == 'x86_64'
 
 - name: 'Install WkHtmlToPdf'
   command: dpkg -i /root/wkhtmltopdf.deb
