@@ -15,7 +15,7 @@ This skeleton includes [QueenCityCodeFactory/butter-cream](https://github.com/Qu
 ### Development Environment
 - **Ansible provisioning** - Complete Ansible playbooks and roles for automated development environment setup
 - **Pre-configured services**:
-  - PHP 8.2+ with FPM
+  - PHP 8.4+ with FPM
   - Nginx web server with SSL support
   - MySQL database
   - Memcached
@@ -207,7 +207,7 @@ updates should be done carefully:
 
 ### Dependencies
 
-- **PHP**: 8.2 or higher
+- **PHP**: 8.4 or higher
 - **CakePHP**: 5.3+
 - **Node.js**: 14+ (for asset compilation)
 - **Composer**: Latest version
