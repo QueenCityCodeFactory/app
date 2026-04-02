@@ -1,5 +1,6 @@
 [development]
-cakephp-app-box ansible_connection=local
+# Hostname is dynamically set by innkeeper's inventory.py based on .innkeeper.env HOSTNAME
+# This file is kept for backwards compatibility but the dynamic inventory takes precedence
 
 [development:vars]
 ansible_python_interpreter=/usr/bin/python3

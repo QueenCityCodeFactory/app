@@ -42,7 +42,7 @@
     owner: root
     group: root
     mode: 0644
-  when: ssl_mode == "self-signed" and (not ssl_cert_file.stat.exists or not ssl_key_file.stat.exists)
+  when: ssl_mode == "self-signed"
 
 - name: Set SSL key permissions
   file:
@@ -50,7 +50,7 @@
     owner: root
     group: root
     mode: 0600
-  when: ssl_mode == "self-signed" and (not ssl_cert_file.stat.exists or not ssl_key_file.stat.exists)
+  when: ssl_mode == "self-signed"
 
 # ─────────────────────────────────────────────────────────────
 # Let's Encrypt SSL (production)

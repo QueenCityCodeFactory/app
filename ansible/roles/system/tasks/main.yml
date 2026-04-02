@@ -1,13 +1,7 @@
 ---
-- name: Update apt
+- name: Update and dist-upgrade apt packages
   apt:
     update_cache: yes
-    cache_valid_time: 3600
-- name: Upgrade apt
-  apt:
-    upgrade: full
-- name: Make a general dist-upgrade
-  apt:
     upgrade: dist
 
 - name: Install Essential Packages
@@ -25,8 +19,6 @@
       - git-core
       - openssl
       - unzip
-      - certbot
-      - python3-certbot-nginx
       - ssl-cert
       - run-one
     state: present
