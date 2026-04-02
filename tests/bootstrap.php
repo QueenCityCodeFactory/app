@@ -15,6 +15,7 @@ declare(strict_types=1);
  * @license   https://opensource.org/licenses/mit-license.php MIT License
  */
 
+use ButterCream\Error\ExceptionRenderer;
 use Cake\Chronos\Chronos;
 use Cake\Core\Configure;
 use Cake\TestSuite\ConnectionHelper;
@@ -37,7 +38,7 @@ if (empty($_SERVER['HTTP_HOST']) && !Configure::read('App.fullBaseUrl')) {
 // Integration tests run via CLI but need a web exception renderer.
 // Without this, ExceptionTrap::chooseRenderer() picks ConsoleExceptionRenderer,
 // which returns a plain string that ErrorHandlerMiddleware wraps as HTTP 500.
-Configure::write('Error.exceptionRenderer', \ButterCream\Error\ExceptionRenderer::class);
+Configure::write('Error.exceptionRenderer', ExceptionRenderer::class);
 
 // Fixate now to avoid one-second-leap-issues
 Chronos::setTestNow(Chronos::now());
