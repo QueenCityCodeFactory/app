@@ -1,0 +1,63 @@
+---
+# ─────────────────────────────────────────────────────────────
+# Ansible Group Variables for Development
+# ─────────────────────────────────────────────────────────────
+# Copy this file to all.yml and update all values for your project.
+#
+#   cp all.yml.example all.yml
+#
+# ⚠️  all.yml is gitignored — you MUST create it before provisioning.
+# ─────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────
+# Application Identity
+# ─────────────────────────────────────────────────────────────
+# app_name: Short name used for cron symlinks, database name, etc.
+# app_path: Absolute path where the application lives on the VM.
+# app_domain: The domain name for the application (use .test TLD for local dev).
+# db_name: MySQL database name (typically app_name with underscores).
+# db_user: MySQL user for the application.
+# db_password: MySQL password for the application user.
+
+app_name: "CHANGEME"
+app_path: "/var/www/CHANGEME"
+app_domain: "CHANGEME.test"
+db_name: "CHANGEME"
+db_user: "CHANGEME"
+db_password: "CHANGEME"
+
+# ─────────────────────────────────────────────────────────────
+# SSL Configuration
+# ─────────────────────────────────────────────────────────────
+# ssl_mode: "self-signed" for local development, "letsencrypt" for production.
+# ssl_domain: Should match app_domain.
+
+ssl_mode: "self-signed"
+ssl_domain: "CHANGEME.test"
+ssl_organization: "Your Organization"
+ssl_country: "US"
+ssl_state: "Your State"
+ssl_city: "Your City"
+
+# Let's Encrypt (only used when ssl_mode is "letsencrypt")
+# ssl_letsencrypt_email: "admin@example.com"
+
+# ─────────────────────────────────────────────────────────────
+# Nginx Configuration
+# ─────────────────────────────────────────────────────────────
+
+nginx_configurations:
+  - server_name: "CHANGEME.test"
+    config: "default"
+    document_root: "/var/www/CHANGEME/webroot"
+    php_fpm_version: "php8.4"
+    default_server: true
+
+# ─────────────────────────────────────────────────────────────
+# Cron
+# ─────────────────────────────────────────────────────────────
+
+active_crontab_files:
+  development:
+    - concat/initial.tab
+    - concat/clear_tmp_files.tab
