@@ -84,6 +84,12 @@
       args:
         executable: /bin/bash
 
+    - name: Set package.json name from app_name
+      replace:
+        path: "{{ app_path }}/package.json"
+        regexp: '"name": ".*"'
+        replace: '"name": "{{ app_name }}"'
+
     - name: Install node packages for application
       shell: "source ~/.nvm/nvm.sh && cd {{ app_path }} && npm install"
       become: true
