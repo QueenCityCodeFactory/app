@@ -34,6 +34,11 @@ if (empty($_SERVER['HTTP_HOST']) && !Configure::read('App.fullBaseUrl')) {
     Configure::write('App.fullBaseUrl', 'http://localhost');
 }
 
+// Integration tests run via CLI but need a web exception renderer.
+// Without this, ExceptionTrap::chooseRenderer() picks ConsoleExceptionRenderer,
+// which returns a plain string that ErrorHandlerMiddleware wraps as HTTP 500.
+Configure::write('Error.exceptionRenderer', \ButterCream\Error\ExceptionRenderer::class);
+
 // Fixate now to avoid one-second-leap-issues
 Chronos::setTestNow(Chronos::now());
 
