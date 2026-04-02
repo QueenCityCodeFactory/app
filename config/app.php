@@ -520,19 +520,9 @@ return [
      */
     'CakePdf' => [
         'engine' => [
-            'className' => 'CakePdf.WkHtmlToPdf',
-            'binary' => '/usr/local/bin/wkhtmltopdf',
-            'options' => [
-                'viewport-size' => '1024x760',
-                'enable-local-file-access' => true,
-            ],
+            'className' => 'CakePdf.Dompdf',
         ],
         'encoding' => 'utf-8',
-        'options' => [
-            'print-media-type' => false,
-            'outline' => true,
-            'dpi' => 96,
-        ],
         'margin' => [
             'left' => '12.7',
             'right' => '12.7',
