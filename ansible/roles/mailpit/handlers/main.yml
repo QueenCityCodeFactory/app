@@ -1,6 +1,6 @@
 ---
-- name: start and enable mailpit
+- name: restart mailpit
   systemd:
     name: mailpit
-    enabled: yes
+    daemon_reload: yes
     state: restarted

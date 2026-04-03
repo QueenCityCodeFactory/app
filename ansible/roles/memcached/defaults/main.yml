@@ -1,10 +1,10 @@
 ---
-memory: 512
-tcp_port: 11211
-udp_port: 11211
-listen: 0.0.0.0
-maxconn: 1024
-max_object_size: 1m
-logfile: /var/log/memcached.log
-user: memcache
-group: memcache
+memcached_memory: 512
+memcached_tcp_port: 11211
+memcached_udp_port: 0
+memcached_listen: 0.0.0.0
+memcached_maxconn: 1024
+memcached_max_object_size: 1m
+memcached_logfile: /var/log/memcached.log
+memcached_user: memcache
+memcached_group: memcache

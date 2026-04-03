@@ -1,4 +1,4 @@
-# Generated Crontab - Check Ansible Role/Playbook
+# Generated Crontab - Managed by Ansible
 
-TZ="America/New_York"
-MAILTO=""
+TZ="{{ crontab_timezone }}"
+MAILTO="{{ crontab_mailto }}"

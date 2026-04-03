@@ -4,11 +4,11 @@ After=network.target
 
 [Service]
 ExecStart={{ mailpit_install_dir }}/mailpit \
-  --listen {{ mailpit_ui_bind | default('0.0.0.0:8025') }} \
-  --smtp {{ mailpit_smtp_bind | default('0.0.0.0:1025') }}
+  --listen {{ mailpit_ui_bind }} \
+  --smtp {{ mailpit_smtp_bind }}
 Restart=always
-User={{ mailpit_user | default('nobody') }}
-Group={{ mailpit_group | default('nogroup') }}
+User={{ mailpit_user }}
+Group={{ mailpit_group }}
 
 [Install]
 WantedBy=multi-user.target

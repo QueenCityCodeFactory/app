@@ -11,6 +11,33 @@
     become_alternate_user: "ubuntu"
 
   pre_tasks:
+    - name: Copy all.yml.example to all.yml on host if it does not exist
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../inventories/development/group_vars/all.yml.example"
+        dest: "{{ playbook_dir }}/../inventories/development/group_vars/all.yml"
+        force: no
+      delegate_to: localhost
+      become: false
+
+    - name: Reload variables after copying defaults
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/../inventories/development/group_vars/all.yml"
+
+    - name: Ensure all.yml exists on the VM as well
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../inventories/development/group_vars/all.yml"
+        dest: "{{ app_path }}/ansible/inventories/development/group_vars/all.yml"
+        force: no
+      become: true
+      become_user: "{{ become_alternate_user }}"
+
+    - name: Check if this is the initial provision
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/../../.innkeeper/state.built"
+      delegate_to: localhost
+      become: false
+      register: state_built
+
     - name: Validate required variables are defined
       ansible.builtin.assert:
         that:
@@ -31,12 +58,13 @@
           Then edit all.yml with your project-specific values.
 
   roles:
+    - {role: "zsh", tags: "zsh"}
     - {role: "system", tags: "system"}
     - {role: "chrony", tags: "chrony"}
     - {role: "php", tags: "php"}
     - {role: "ssl", tags: "ssl"}
     - {role: "nginx", tags: "nginx"}
-    - {role: "mysql", tags: "mysql"}
+    - {role: "mysql_server", tags: "mysql_server"}
     - {role: "memcached", tags: "memcached"}
     - {role: "nodejs", tags: "nodejs"}
     - {role: "crontab", tags: "crontab"}
@@ -49,11 +77,20 @@
         dest: "/etc/cron.d/{{ app_name }}"
         state: link
 
+    - name: Create CakePHP dev config from default
+      copy:
+        src: "{{ app_path }}/config/app_local.example.php"
+        dest: "{{ app_path }}/config/app_local.php"
+        remote_src: yes
+        force: no
+      become: true
+      become_user: "{{ become_alternate_user }}"
+      when: not state_built.stat.exists
+
     - name: install composer dependencies
-      composer:
-        command: install
-        no_dev: no
-        working_dir: "{{ app_path }}"
+      shell: "echo Y | composer install"
+      args:
+        chdir: "{{ app_path }}"
       become: true
       become_user: "{{ become_alternate_user }}"
       register: composer_result
@@ -77,32 +114,29 @@
         - tmp/tests
       when: composer_result is succeeded
 
-    - name: Install gulp globally
-      shell: "source ~/.nvm/nvm.sh && npm install -g gulpjs/gulp-cli"
-      become: true
-      become_user: "{{ become_alternate_user }}"
-      args:
-        executable: /bin/bash
-
     - name: Set package.json name from app_name
       replace:
         path: "{{ app_path }}/package.json"
         regexp: '"name": ".*"'
         replace: '"name": "{{ app_name }}"'
+      when: not state_built.stat.exists
 
     - name: Install node packages for application
-      shell: "source ~/.nvm/nvm.sh && cd {{ app_path }} && npm install"
+      shell: "source ~/.nvm/nvm.sh && npm install"
       become: true
       become_user: "{{ become_alternate_user }}"
       args:
         executable: /bin/bash
+        chdir: "{{ app_path }}"
 
-    - name: Create CakePHP dev config from default
-      copy:
-        src: "{{ app_path }}/config/app_local.example.php"
-        dest: "{{ app_path }}/config/app_local.php"
-        remote_src: yes
-        force: no
+    - name: Build frontend assets with gulp
+      shell: "source ~/.nvm/nvm.sh && gulp"
+      become: true
+      become_user: "{{ become_alternate_user }}"
+      args:
+        executable: /bin/bash
+        chdir: "{{ app_path }}"
+      when: not state_built.stat.exists
 
     - name: Create /var/files/
       file:
@@ -113,48 +147,51 @@
         mode: 0755
 
     - name: restart nginx
-      service:
+      systemd:
         name: nginx
         state: restarted
 
-    - name: restart php8.4-fpm
-      service:
-        name: php8.4-fpm
+    - name: restart php-fpm
+      systemd:
+        name: "php{{ php_version }}-fpm"
         state: restarted
 
     - name: Create MySQL application user
-      shell: "mysql -e \"CREATE USER IF NOT EXISTS '{{ db_user }}'@'%' IDENTIFIED WITH mysql_native_password BY '{{ db_password }}'\";"
-      become: true
-      become_user: root
+      community.mysql.mysql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        priv: "{{ db_name }}.*:ALL,GRANT"
+        host: "%"
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      when: mysql_server_local | default(true)
 
-    - name: Grant the MySQL application user permissions
-      shell: "mysql -e \"GRANT ALL on *.* to '{{ db_user }}'@'%' WITH GRANT OPTION\";"
-      become: true
-      become_user: root
+    - name: Create the MySQL database
+      community.mysql.mysql_db:
+        name: "{{ db_name }}"
+        encoding: utf8mb4
+        collation: utf8mb4_general_ci
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      when: mysql_server_local | default(true)
 
-    - name: Flushing the MySQL Privileges
-      shell: "mysql -e \"FLUSH PRIVILEGES\";"
-      become: true
-      become_user: root
-
-    - name: Create the MySQL Database for the project
-      shell: "mysql -e \"CREATE DATABASE IF NOT EXISTS {{ db_name }} DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_general_ci;\";"
-      become: true
-      become_user: root
-
-    - name: Check if app migrations have already been ran
-      shell: "mysql -e \"SELECT * FROM information_schema.tables WHERE table_schema = '{{ db_name }}'\";"
-      become: true
-      become_user: root
-      register: migrationran
-
-    - name: Check if migration files exist
-      find:
-        paths: "{{ app_path }}/config/Migrations"
-        patterns: "*.php"
-      register: migration_files
-      when: composer_result is succeeded and migrationran.stdout == ""
-
-    - name: Run app migrations
+    - name: Run app migrations on initial provision
       command: "{{ app_path }}/bin/cake migrations migrate -vvvv"
-      when: composer_result is succeeded and migrationran.stdout == "" and migration_files.matched > 0
+      when: not state_built.stat.exists
+
+  post_tasks:
+    - name: Check if innkeeper is available
+      ansible.builtin.command: which innkeeper
+      delegate_to: localhost
+      become: false
+      register: innkeeper_check
+      changed_when: false
+      failed_when: false
+
+    - name: Sync VM files back to host (vendor, node_modules, app_local.php, etc.)
+      ansible.builtin.command:
+        cmd: innkeeper sync from-vm --all
+        chdir: "{{ playbook_dir }}/../.."
+      delegate_to: localhost
+      become: false
+      when: not state_built.stat.exists and innkeeper_check.rc == 0

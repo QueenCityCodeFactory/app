@@ -1,0 +1,11 @@
+# Managed by Ansible
+
+-d
+-m {{ memcached_memory }}
+-p {{ memcached_tcp_port }}
+-U {{ memcached_udp_port }}
+-u {{ memcached_user }}
+-l {{ memcached_listen }}
+-c {{ memcached_maxconn }}
+-I {{ memcached_max_object_size }}
+logfile {{ memcached_logfile }}

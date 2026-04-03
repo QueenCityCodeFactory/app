@@ -18,6 +18,7 @@
 # db_name: MySQL database name (typically app_name with underscores).
 # db_user: MySQL user for the application.
 # db_password: MySQL password for the application user.
+# mysql_server_local: Set to false if using Docker or external DB (skips local user/db creation).
 
 app_name: "CHANGEME"
 app_path: "/var/www/CHANGEME"
@@ -25,6 +26,7 @@ app_domain: "CHANGEME.test"
 db_name: "CHANGEME"
 db_user: "CHANGEME"
 db_password: "CHANGEME"
+mysql_server_local: true
 
 # ─────────────────────────────────────────────────────────────
 # SSL Configuration
@@ -60,4 +62,5 @@ nginx_configurations:
 active_crontab_files:
   development:
     - concat/initial.tab
+    - concat/clear_cache.tab
     - concat/clear_tmp_files.tab

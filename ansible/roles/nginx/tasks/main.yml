@@ -16,44 +16,48 @@
       Falling back to default Ubuntu nginx package.
   when: nginx_ppa_result is failed
 
-- name: Apt Update
-  apt:
-    update_cache: yes
-
-- name: Install Nginx
+- name: Install nginx
   apt:
     pkg:
       - nginx
     state: present
+    update_cache: yes
 
-- name: Sites Available Configs
+- name: Deploy nginx.conf
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart nginx
+
+- name: Deploy site configs
   template:
     src: "sites-available/{{ item.config }}.j2"
     dest: "/etc/nginx/sites-available/{{ item.server_name }}.conf"
     owner: root
     group: root
-    mode: 0644
-    backup: yes
-  with_items: "{{ nginx_configurations }}"
+    mode: '0644'
+  loop: "{{ nginx_configurations }}"
+  notify: restart nginx
 
-- name: Create the Sites Enabled Symlinks
+- name: Enable site configs
   file:
     src: "/etc/nginx/sites-available/{{ item.server_name }}.conf"
     dest: "/etc/nginx/sites-enabled/{{ item.server_name }}.conf"
     state: link
-  with_items: "{{ nginx_configurations }}"
+  loop: "{{ nginx_configurations }}"
+  notify: restart nginx
 
 - name: Remove default site symlink
   file:
     path: /etc/nginx/sites-enabled/default
     state: absent
+  notify: restart nginx
 
-- name: Deploy nginx.conf
-  template:
-    src: "nginx.conf"
-    dest: /etc/nginx/nginx.conf
-    owner: root
-    group: root
-    mode: 0644
-    backup: yes
-  notify: restart and enable nginx
+- name: Enable and start nginx
+  systemd:
+    name: nginx
+    enabled: yes
+    state: started

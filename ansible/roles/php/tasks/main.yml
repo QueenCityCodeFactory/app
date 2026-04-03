@@ -1,76 +1,79 @@
 ---
-- name: Add PPA
+- name: Add ondrej/php PPA (with retry logic)
   shell: "add-apt-repository -y ppa:ondrej/php"
+  register: php_ppa_result
+  retries: 3
+  delay: 30
+  until: php_ppa_result is succeeded
+  failed_when: false
   become: true
   become_user: root
 
-- name: Apt Update
-  apt:
-    update_cache: yes
+- name: Warn if PPA addition failed
+  debug:
+    msg: |
+      WARNING: Could not add ondrej/php PPA (Launchpad may be down).
+      Falling back to default Ubuntu PHP packages.
+  when: php_ppa_result is failed
 
-- name: Install PHP and Dependencies
+- name: Install PHP and extensions
   apt:
-    pkg:
-      - php8.4-fpm
-      - php8.4-cli
-      - php8.4-mysql
-      - php8.4-intl
-      - php8.4-ldap
-      - php8.4-sqlite3
-      - php8.4-curl
-      - php8.4-xsl
-      - php8.4-imap
-      - php8.4-imagick
-      - php8.4-memcached
-      - php8.4-zip
-      - php8.4-mbstring
-      - php-json
-      - php8.4-soap
-      - php8.4-xml
-      - php8.4-gd
+    pkg: "{{ php_packages }}"
     state: present
+    update_cache: yes
 
 - name: Install Composer
   get_url:
-    url: https://getcomposer.org/composer.phar
+    url: https://getcomposer.org/download/latest-stable/composer.phar
     dest: /usr/local/bin/composer
-    mode: 0755
+    mode: '0755'
 
-- name: Configure php8.4-fpm pool.
+- name: Configure php{{ php_version }}-fpm pool
   lineinfile:
-    dest: "/etc/php/8.4/fpm/pool.d/www.conf"
+    dest: "/etc/php/{{ php_version }}/fpm/pool.d/www.conf"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
     backrefs: yes
-  with_items:
+  loop:
     - regexp: "^listen.?=.+$"
-      line: "listen = /run/php/php8.4-fpm.sock"
+      line: "listen = /run/php/php{{ php_version }}-fpm.sock"
     - regexp: "^pm.max_children.?=.+$"
-      line: "pm.max_children = 120"
+      line: "pm.max_children = {{ php_fpm_max_children }}"
     - regexp: "^pm.start_servers.?=.+$"
-      line: "pm.start_servers = 10"
+      line: "pm.start_servers = {{ php_fpm_start_servers }}"
     - regexp: "^pm.min_spare_servers.?=.+$"
-      line: "pm.min_spare_servers = 10"
+      line: "pm.min_spare_servers = {{ php_fpm_min_spare_servers }}"
     - regexp: "^pm.max_spare_servers.?=.+$"
-      line: "pm.max_spare_servers = 20"
-    - regexp: "^;pm.max_requests.?=.+$"
-      line: "pm.max_requests = 500"
+      line: "pm.max_spare_servers = {{ php_fpm_max_spare_servers }}"
+    - regexp: "^;?pm.max_requests.?=.+$"
+      line: "pm.max_requests = {{ php_fpm_max_requests }}"
+  notify: restart php-fpm
 
-- name: Configure php8.4 php.ini
+- name: Configure php{{ php_version }} php.ini
   lineinfile:
-    dest: "/etc/php/8.4/fpm/php.ini"
+    dest: "/etc/php/{{ php_version }}/fpm/php.ini"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
     backrefs: yes
-  with_items:
+  loop:
     - regexp: "^post_max_size.?=.+$"
-      line: "post_max_size = 108M"
+      line: "post_max_size = {{ php_post_max_size }}"
     - regexp: "^upload_max_filesize.?=.+$"
-      line: "upload_max_filesize = 100M"
+      line: "upload_max_filesize = {{ php_upload_max_filesize }}"
+    - regexp: "^memory_limit.?=.+$"
+      line: "memory_limit = {{ php_memory_limit }}"
+    - regexp: "^max_execution_time.?=.+$"
+      line: "max_execution_time = {{ php_max_execution_time }}"
     - regexp: "^session.gc_probability.?=.+$"
       line: "session.gc_probability = 1"
     - regexp: "^zend.assertions.?=.+$"
       line: "zend.assertions = 1"
-  notify: restart php8.4-fpm
+  notify: restart php-fpm
+
+- name: Enable and start php{{ php_version }}-fpm
+  systemd:
+    name: "php{{ php_version }}-fpm"
+    enabled: yes
+    state: started

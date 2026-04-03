@@ -1,5 +1,5 @@
 ---
 - name: restart memcached
-  service:
+  systemd:
     name: memcached
     state: restarted

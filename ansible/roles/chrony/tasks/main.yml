@@ -5,20 +5,7 @@
     state: present
     update_cache: yes
 
-- name: Enable and start chrony
-  systemd:
-    name: chrony
-    enabled: yes
-    state: started
-
-- name: Set timezone to UTC
-  command: timedatectl set-timezone UTC
-
-- name: Enable NTP sync via timedatectl (optional safety net)
-  command: timedatectl set-ntp true
-  ignore_errors: true
-
-- name: Install chrony config with USNO servers
+- name: Deploy chrony config
   template:
     src: chrony.conf.j2
     dest: /etc/chrony/chrony.conf
@@ -26,3 +13,18 @@
     group: root
     mode: '0644'
   notify: restart chrony
+
+- name: Enable and start chrony
+  systemd:
+    name: chrony
+    enabled: yes
+    state: started
+
+- name: Set timezone
+  command: timedatectl set-timezone {{ chrony_timezone }}
+  changed_when: false
+
+- name: Enable NTP sync via timedatectl
+  command: timedatectl set-ntp true
+  changed_when: false
+  failed_when: false

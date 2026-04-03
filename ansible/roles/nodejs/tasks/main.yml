@@ -1,64 +1,82 @@
 ---
-- name: Install dependencies
-  apt:
-    pkg:
-      - git
-      - curl
-      - build-essential
-    update_cache: yes
-    cache_valid_time: 3600
+- name: Determine nodejs user home directory
+  set_fact:
+    nodejs_user_home: "{{ '/root' if nodejs_user == 'root' else '/home/' ~ nodejs_user }}"
 
-- name: Ensure user's home exists
-  file:
-  args:
-    path: "~{{ become_alternate_user }}"
-    state: directory
-    owner: "{{ become_alternate_user }}"
+- name: Check if nvm is already installed
+  stat:
+    path: "{{ nodejs_user_home }}/.nvm/.git"
+  register: nvm_installed
 
 - name: Install nvm
   become: true
-  become_user: "{{ become_alternate_user }}"
+  become_user: "{{ nodejs_user }}"
   git:
-  args:
     repo: https://github.com/nvm-sh/nvm.git
-    dest: ~/.nvm
-    version: "{{ nvm_version }}"
-    recursive: no
+    dest: "{{ nodejs_user_home }}/.nvm"
+    version: "{{ nodejs_nvm_version }}"
+    recursive: false
+  when: not nvm_installed.stat.exists
 
-- name: Source nvm in ~/.profile
+- name: Update nvm to requested version
   become: true
-  become_user: "{{ become_alternate_user }}"
-  lineinfile: >
-    dest=~/{{ item }}
-    line="source ~/.nvm/nvm.sh"
-    create=yes
-  with_items:
-    - .profile
-    - .bashrc
+  become_user: "{{ nodejs_user }}"
+  git:
+    repo: https://github.com/nvm-sh/nvm.git
+    dest: "{{ nodejs_user_home }}/.nvm"
+    version: "{{ nodejs_nvm_version }}"
+    recursive: false
+  when: nvm_installed.stat.exists
+
+- name: Source nvm in .bashrc
+  become: true
+  become_user: "{{ nodejs_user }}"
+  lineinfile:
+    dest: "{{ nodejs_user_home }}/.bashrc"
+    line: "source ~/.nvm/nvm.sh"
+    create: true
+    mode: "0644"
+
+- name: Deploy nvm zsh drop-in
+  template:
+    src: nvm.zsh.j2
+    dest: "{{ nodejs_user_home }}/.zshrc.d/nvm.zsh"
+    owner: "{{ nodejs_user }}"
+    group: "{{ nodejs_user }}"
+    mode: "0644"
 
 - name: Install Node {{ nodejs_version }}
-  shell: "source ~/.nvm/nvm.sh && nvm install {{ nodejs_version }}"
   become: true
-  become_user: "{{ become_alternate_user }}"
+  become_user: "{{ nodejs_user }}"
+  shell: "source {{ nodejs_user_home }}/.nvm/nvm.sh && nvm install {{ nodejs_version }}"
   args:
     executable: /bin/bash
   register: nvm_install_result
   changed_when: "'is already installed.' not in nvm_install_result.stdout and 'is already installed.' not in nvm_install_result.stderr"
 
 - name: Check if {{ nodejs_version }} is the default node version
-  shell: "source ~/.nvm/nvm.sh && nvm ls | grep -e 'default -> {{ nodejs_version }}'"
-  register: nvm_check_default
   become: true
-  become_user: "{{ become_alternate_user }}"
+  become_user: "{{ nodejs_user }}"
+  shell: "source {{ nodejs_user_home }}/.nvm/nvm.sh && nvm ls | grep -e 'default -> {{ nodejs_version }}'"
   args:
     executable: /bin/bash
+  register: nvm_check_default
   changed_when: false
   failed_when: false
 
 - name: Set default node version to {{ nodejs_version }}
-  shell: "source ~/.nvm/nvm.sh && nvm alias default {{ nodejs_version }}"
   become: true
-  become_user: "{{ become_alternate_user }}"
+  become_user: "{{ nodejs_user }}"
+  shell: "source {{ nodejs_user_home }}/.nvm/nvm.sh && nvm alias default {{ nodejs_version }}"
   args:
     executable: /bin/bash
   when: nvm_check_default.rc != 0
+
+- name: Install global npm packages
+  become: true
+  become_user: "{{ nodejs_user }}"
+  shell: "source {{ nodejs_user_home }}/.nvm/nvm.sh && npm install -g {{ item }}"
+  args:
+    executable: /bin/bash
+  loop: "{{ nodejs_global_packages }}"
+  when: nodejs_global_packages | length > 0

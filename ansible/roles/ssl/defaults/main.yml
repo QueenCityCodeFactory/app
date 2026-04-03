@@ -3,6 +3,11 @@
 ssl_mode: "self-signed"
 ssl_domain: "cakephp.app.test"
 
+# Certificate parameters
+ssl_key_size: 2048
+ssl_dhparam_size: 2048
+ssl_cert_days: 3650
+
 # Organization details used in self-signed certificate subject
 ssl_organization: "Development"
 ssl_country: "US"

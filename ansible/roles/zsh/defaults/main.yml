@@ -1,0 +1,5 @@
+---
+# Users to install zsh + oh-my-zsh for and set as default shell
+zsh_users:
+  - root
+  - ubuntu

@@ -1,5 +1,5 @@
 ---
-- name: Loop Over and Create temp Template for each desired crontab
+- name: Build crontab from fragments
   template:
     src: concat.j2
     dest: "{{ playbook_dir }}/../roles/crontab/templates/{{ item }}.txt"
@@ -7,8 +7,11 @@
   delegate_to: localhost
   become: false
 
-- name: Loop Over and Create final file for each crontab file
+- name: Deploy crontab files
   template:
     src: "{{ item }}.txt"
     dest: "{{ app_path }}/cron.d/{{ item }}"
+    owner: root
+    group: root
+    mode: '0644'
   loop: "{{ active_crontab_files | list }}"

@@ -1,8 +1,12 @@
-server tick.usno.navy.mil iburst
-server tock.usno.navy.mil iburst
+{% for server in chrony_ntp_servers %}
+server {{ server }} iburst
+{% endfor %}
+{% for pool in chrony_ntp_pools %}
+pool {{ pool }} iburst
+{% endfor %}
 
 driftfile /var/lib/chrony/chrony.drift
 makestep 1.0 3
 rtcsync
 
-allow 127.0.0.1
+logdir /var/log/chrony

@@ -8,3 +8,6 @@ mailpit_version: ""  # leave empty to pull latest
 
 mailpit_ui_bind: "0.0.0.0:8025"
 mailpit_smtp_bind: "0.0.0.0:1025"
+
+mailpit_user: nobody
+mailpit_group: nogroup

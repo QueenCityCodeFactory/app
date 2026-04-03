@@ -1,15 +1,15 @@
 ---
-- name: Install MySQL packages
+- name: Install MySQL server
   apt:
     pkg:
       - mysql-server
-      - mysql-client
     state: present
     update_cache: yes
   environment:
     DEBIAN_FRONTEND: noninteractive
 
-- name: start mysql
-  service:
+- name: Enable and start MySQL
+  systemd:
     name: mysql
+    enabled: yes
     state: started

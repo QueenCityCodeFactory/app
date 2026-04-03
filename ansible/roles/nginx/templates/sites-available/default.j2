@@ -18,6 +18,7 @@ server {
 
 server {
     listen 443 ssl{{ ' default_server' if item.default_server | default(false) else '' }};
+    http2 on;
 
 {% if ssl_mode | default('self-signed') == 'letsencrypt' %}
     ssl_certificate {{ item.ssl_certificate | default('/etc/letsencrypt/live/' + item.server_name + '/fullchain.pem') }};
@@ -41,34 +42,37 @@ server {
         return 404;
     }
 
-    # Block access to .env files
-    location ~ /\.env {
+    # Block access to dotfiles (except .well-known)
+    location ~ /\.(?!well-known) {
         access_log off;
         deny all;
         return 404;
     }
 
-    # CakePHP Framework Rewrite
+    # Static file caching
+    location ~* \.(css|js|gif|ico|jpe?g|png|svg|webp|woff2?|ttf|eot)$ {
+        expires 30d;
+        access_log off;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # CakePHP framework rewrite
     location / {
         try_files $uri $uri/ /index.php?$args;
     }
 
-    # Pass the PHP scripts to FastCGI server
+    # Pass PHP scripts to FastCGI server
     location ~ \.php$ {
+        try_files $uri =404;
         fastcgi_pass unix:/run/php/{{ item.php_fpm_version }}-fpm.sock;
         fastcgi_index index.php;
         fastcgi_pass_header Set-Cookie;
         fastcgi_ignore_headers Cache-Control Expires;
         fastcgi_intercept_errors on;
-        fastcgi_connect_timeout 240;
-        fastcgi_send_timeout 240;
-        fastcgi_read_timeout 240;
+        fastcgi_connect_timeout {{ nginx_fastcgi_timeout }};
+        fastcgi_send_timeout {{ nginx_fastcgi_timeout }};
+        fastcgi_read_timeout {{ nginx_fastcgi_timeout }};
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include fastcgi_params;
-    }
-
-    # Deny access to .htaccess files, git & svn repositories, etc
-    location ~ /\.(ht|git|svn) {
-        deny all;
     }
 }

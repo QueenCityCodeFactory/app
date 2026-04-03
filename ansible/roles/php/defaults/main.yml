@@ -1,0 +1,35 @@
+---
+php_version: "8.4"
+
+php_packages:
+  - "php{{ php_version }}-bcmath"
+  - "php{{ php_version }}-cli"
+  - "php{{ php_version }}-curl"
+  - "php{{ php_version }}-fpm"
+  - "php{{ php_version }}-gd"
+  - "php{{ php_version }}-imagick"
+  - "php{{ php_version }}-imap"
+  - "php{{ php_version }}-intl"
+  - "php{{ php_version }}-ldap"
+  - "php{{ php_version }}-mbstring"
+  - "php{{ php_version }}-memcached"
+  - "php{{ php_version }}-mysql"
+  - "php{{ php_version }}-opcache"
+  - "php{{ php_version }}-soap"
+  - "php{{ php_version }}-sqlite3"
+  - "php{{ php_version }}-xml"
+  - "php{{ php_version }}-xsl"
+  - "php{{ php_version }}-zip"
+
+# FPM pool settings
+php_fpm_max_children: 120
+php_fpm_start_servers: 10
+php_fpm_min_spare_servers: 10
+php_fpm_max_spare_servers: 20
+php_fpm_max_requests: 500
+
+# php.ini settings
+php_post_max_size: 108M
+php_upload_max_filesize: 100M
+php_memory_limit: 256M
+php_max_execution_time: 300

@@ -1,0 +1,68 @@
+---
+- name: Install zsh
+  apt:
+    name:
+      - zsh
+      - fonts-firacode
+    state: present
+
+- name: Set zsh as default shell
+  user:
+    name: "{{ item }}"
+    shell: /usr/bin/zsh
+  loop: "{{ zsh_users }}"
+
+- name: Download oh-my-zsh installer script
+  get_url:
+    url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+    dest: /tmp/ohmyzsh-install.sh
+    mode: "0755"
+
+- name: Check if oh-my-zsh is already installed
+  stat:
+    path: "{{ '/root' if item == 'root' else '/home/' ~ item }}/.oh-my-zsh"
+  register: ohmyzsh_installed
+  loop: "{{ zsh_users }}"
+
+- name: Install oh-my-zsh
+  shell: |
+    sudo -E -u {{ item.item }} HOME={{ '/root' if item.item == 'root' else '/home/' ~ item.item }} sh -c 'export RUNZSH=no; /tmp/ohmyzsh-install.sh'
+  args:
+    executable: /bin/zsh
+  loop: "{{ ohmyzsh_installed.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when: not item.stat.exists
+
+- name: Remove oh-my-zsh installer script
+  file:
+    path: /tmp/ohmyzsh-install.sh
+    state: absent
+
+- name: Deploy custom .zshrc
+  template:
+    src: zshrc.j2
+    dest: "{{ '/root' if item == 'root' else '/home/' ~ item }}/.zshrc"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: "0644"
+  loop: "{{ zsh_users }}"
+
+- name: Ensure .zshrc.d directory exists
+  file:
+    path: "{{ '/root' if item == 'root' else '/home/' ~ item }}/.zshrc.d"
+    state: directory
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: "0755"
+  loop: "{{ zsh_users }}"
+
+- name: Deploy server-specific zsh extras
+  template:
+    src: extras.zsh.j2
+    dest: "{{ '/root' if item == 'root' else '/home/' ~ item }}/.zshrc.d/extras.zsh"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: "0644"
+  loop: "{{ zsh_users }}"
+  when: zsh_extras is defined and zsh_extras | length > 0

@@ -5,7 +5,7 @@
     state: directory
     owner: root
     group: root
-    mode: 0755
+    mode: "0755"
   loop:
     - /etc/nginx/ssl.crt
     - /etc/nginx/ssl.key
@@ -28,8 +28,8 @@
 
 - name: Generate self-signed SSL certificate
   command: >
-    openssl req -x509 -nodes -days 3650
-    -newkey rsa:2048
+    openssl req -x509 -nodes -days {{ ssl_cert_days }}
+    -newkey rsa:{{ ssl_key_size }}
     -keyout /etc/nginx/ssl.key/{{ ssl_domain }}.key
     -out /etc/nginx/ssl.crt/{{ ssl_domain }}.crt
     -subj "/C={{ ssl_country }}/ST={{ ssl_state }}/L={{ ssl_city }}/O={{ ssl_organization }}/CN={{ ssl_domain }}"
@@ -41,7 +41,7 @@
     path: "/etc/nginx/ssl.crt/{{ ssl_domain }}.crt"
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   when: ssl_mode == "self-signed"
 
 - name: Set SSL key permissions
@@ -49,7 +49,7 @@
     path: "/etc/nginx/ssl.key/{{ ssl_domain }}.key"
     owner: root
     group: root
-    mode: 0600
+    mode: "0600"
   when: ssl_mode == "self-signed"
 
 # ─────────────────────────────────────────────────────────────
@@ -79,10 +79,21 @@
     -d {{ ssl_domain }}
   when: ssl_mode == "letsencrypt" and not letsencrypt_cert_file.stat.exists
 
+- name: Create certbot renewal deploy hook
+  copy:
+    dest: /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+    content: |
+      #!/bin/bash
+      systemctl reload nginx
+    owner: root
+    group: root
+    mode: "0755"
+  when: ssl_mode == "letsencrypt"
+
 - name: Enable certbot auto-renewal timer
   systemd:
     name: certbot.timer
-    enabled: yes
+    enabled: true
     state: started
   when: ssl_mode == "letsencrypt"
 
@@ -96,7 +107,7 @@
   register: dhparam_file
 
 - name: Generate dhparam (this takes a moment)
-  command: openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+  command: openssl dhparam -out /etc/ssl/certs/dhparam.pem {{ ssl_dhparam_size }}
   when: not dhparam_file.stat.exists
 
 - name: Set dhparam permissions
@@ -104,5 +115,4 @@
     path: /etc/ssl/certs/dhparam.pem
     owner: root
     group: root
-    mode: 0644
-  when: not dhparam_file.stat.exists
+    mode: "0644"

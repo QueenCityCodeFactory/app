@@ -1,19 +1,22 @@
 ---
-- name: Install Memcached and Dependencies
+- name: Install memcached
   apt:
     pkg:
       - memcached
     state: present
+    update_cache: yes
 
-- name: Copy configuration file
+- name: Deploy memcached config
   template:
-    src: memcached.conf
+    src: memcached.conf.j2
     dest: /etc/memcached.conf
-    backup: yes
+    owner: root
+    group: root
+    mode: '0644'
   notify: restart memcached
 
-- name: Start Memcached
-  service:
+- name: Enable and start memcached
+  systemd:
     name: memcached
+    enabled: yes
     state: started
-    enabled: true

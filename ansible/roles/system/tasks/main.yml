@@ -7,20 +7,29 @@
 - name: Install Essential Packages
   apt:
     pkg:
-      - curl
-      - software-properties-common
-      - htop
-      - wget
-      - ghostscript
-      - imagemagick
-      - vim
+      - acl
       - build-essential
-      - rsync
-      - git-core
+      - ca-certificates
+      - curl
+      - ghostscript
+      - git
+      - gnupg
+      - htop
+      - imagemagick
+      - jq
+      - lsof
+      - mysql-client
+      - net-tools
       - openssl
-      - unzip
-      - ssl-cert
+      - python3-pymysql
+      - rsync
       - run-one
+      - software-properties-common
+      - ssl-cert
+      - unzip
+      - vim
+      - wget
+      - zip
     state: present
 
 - name: make a symbolic link for www

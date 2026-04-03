@@ -1,3 +1,8 @@
 ---
-nvm_version: v0.40.4
-nodejs_version: 24.14.1
+nodejs_user: "ubuntu"
+nodejs_nvm_version: "v0.40.4"
+nodejs_version: "24.14.1"
+
+# Global npm packages to install
+nodejs_global_packages:
+  - "gulpjs/gulp-cli"

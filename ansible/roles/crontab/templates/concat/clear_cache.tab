@@ -1,0 +1,4 @@
+# Every night, clear CakePHP cache directories
+0 3 * * * root find {{ app_path }}/tmp/cache/models/* -type f ! -name "empty" -delete > /dev/null 2>&1
+0 3 * * * root find {{ app_path }}/tmp/cache/persistent/* -type f ! -name "empty" -delete > /dev/null 2>&1
+0 3 * * * root find {{ app_path }}/tmp/cache/views/* -type f ! -name "empty" -delete > /dev/null 2>&1
