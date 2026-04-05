@@ -1,24 +1,29 @@
-// Main.scss
-// 1. Include functions first (so you can manipulate colors, SVGs, calc, etc)
+// Main.scss — Bootstrap 5.3 + Application Styles
+//
+// Bootstrap requires the legacy @import workflow for its Sass.
+// FA7 is loaded as pre-built CSS via the Gulp pipeline (its SCSS uses
+// @use modules, which are incompatible with @import-based variable overrides).
+
+// 1. Functions first (needed to manipulate colors, SVGs, calc, etc.)
 @import "../../../node_modules/bootstrap/scss/functions";
 
-// 2. Include any default variable overrides here
+// 2. Variable overrides (before Bootstrap loads its own)
 @import "variables";
 
-// 3. Include remainder of required Bootstrap stylesheets (including any separate color mode stylesheets)
+// 3. Bootstrap variables and dark-mode tokens
 @import "../../../node_modules/bootstrap/scss/variables";
 @import "../../../node_modules/bootstrap/scss/variables-dark";
 
-// 4. Include any default map overrides here
+// 4. Map overrides (must come after Bootstrap variables)
 @import "map-overrides";
 
-// 5. Include remainder of required parts
+// 5. Core Bootstrap internals
 @import "../../../node_modules/bootstrap/scss/maps";
 @import "../../../node_modules/bootstrap/scss/mixins";
 @import "../../../node_modules/bootstrap/scss/utilities";
 @import "../../../node_modules/bootstrap/scss/root";
 
-// 6. Optionally include any other parts as needed
+// 6. Bootstrap components
 @import "../../../node_modules/bootstrap/scss/reboot";
 @import "../../../node_modules/bootstrap/scss/type";
 @import "../../../node_modules/bootstrap/scss/images";
@@ -50,31 +55,25 @@
 @import "../../../node_modules/bootstrap/scss/offcanvas";
 @import "../../../node_modules/bootstrap/scss/placeholders";
 
-//  7. Optionally include helpers
+// 7. Bootstrap helpers
 @import "../../../node_modules/bootstrap/scss/helpers";
 
-// 8. Optionally include utilities API last to generate classes based on the Sass map in `_utilities.scss`
+// 8. Bootstrap utilities API (generates utility classes)
 @import "../../../node_modules/bootstrap/scss/utilities/api";
 
-// 9. Optionally include Font Awesome
-@import "../../../node_modules/@fortawesome/fontawesome-free/scss/fontawesome.scss";
-@import "../../../node_modules/@fortawesome/fontawesome-free/scss/solid.scss";
-@import "../../../node_modules/@fortawesome/fontawesome-free/scss/regular.scss";
-@import "../../../node_modules/@fortawesome/fontawesome-free/scss/brands.scss";
-
-// 10. Optionally include Application Specific customizations
+// 9. Application customizations
 @import "animations";
 @import "buttons";
 @import "button-group";
 @import "action-dropdown";
 @import "card";
 @import "form";
-@import "helpers";
 @import "poptart";
 @import "callout";
-@import "layout.scss";
-@import "error.scss";
-@import "login.scss";
-@import "pdf.scss";
-@import "template/main.scss";
-@import "navigation.scss";
+@import "layout";
+@import "error";
+@import "login";
+@import "pdf";
+@import "navigation";
+@import "filters";
+@import "template/main";

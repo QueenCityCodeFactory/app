@@ -1,96 +1,86 @@
 /**
- * Load up all of the Necessary Objects for the Application
- */
-$(function () {
-    // Copied from Panda - classes not included are commented out
-    AppCore.init();
-    AjaxPagination.init();
-    // ModalQuickView.init();
-    ModalConfirm.init();
-    ClearSearchForm.init();
-    PaginationLimit.init();
-    // QuickSave.init();
-    // SessionMonitor.init();
-    // Templates.init();
-    // SelectOther.init();
-    // EditableSelectOther.init();
-    // FormNavigationAlert.init();
-});
-
-/**
- * AppCore Handlers and functions
- * @type object
+ * AppCore - Core application initialization and utility functions.
+ * Uses vanilla JS and Bootstrap 5 native APIs. No jQuery dependency.
  */
 var AppCore = {
 
-    /**
-     * Load up all of the custom handlers
-     */
-    init: function (options) {
-        var self = this;
-        self.touchstart(options);
-        self.popover(options);
-        self.htmlPopover(options);
-        self.mask(options);
-        self.select2(options);
-        self.textarea(options);
-    },
+  /**
+   * Initialize all core handlers.
+   * Safe to call multiple times (idempotent) — used after AJAX content injection.
+   */
+  init: function () {
+    this.tooltips();
+    this.popovers();
+    this.htmlPopovers();
+    this.masks();
+    this.enhancedSelects();
+    FormatTime.init();
+  },
 
-    touchstart: function (options) {
-        var self = this;
-        // Need to attach this on ajax loaded content
-        if (!("ontouchstart" in window || window.DocumentTouch && document instanceof DocumentTouch)) {
-            $('[data-bs-toggle="tooltip"]').tooltip();
-        }
-    },
+  /**
+   * Initialize Bootstrap 5 tooltips on elements with data-bs-toggle="tooltip"
+   */
+  tooltips: function () {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+      if (!bootstrap.Tooltip.getInstance(el)) {
+        new bootstrap.Tooltip(el);
+      }
+    });
+  },
 
-    popover: function (options) {
-        var self = this;
-        $('[data-bs-toggle="popover"]').popover();
-    },
+  /**
+   * Initialize Bootstrap 5 popovers on elements with data-bs-toggle="popover"
+   */
+  popovers: function () {
+    document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) {
+      if (!bootstrap.Popover.getInstance(el)) {
+        new bootstrap.Popover(el);
+      }
+    });
+  },
 
-    htmlPopover: function (options) {
-        var self = this;
-        $('.html-popover').popover({
-            content: function (a,b,c) {
-                return $($(this).data('element')).html();
-            },
-            html: true
+  /**
+   * Initialize HTML content popovers on .html-popover elements
+   */
+  htmlPopovers: function () {
+    document.querySelectorAll('.html-popover').forEach(function (el) {
+      if (!bootstrap.Popover.getInstance(el)) {
+        var sourceSelector = el.dataset.element;
+        var sourceEl = sourceSelector ? document.querySelector(sourceSelector) : null;
+        new bootstrap.Popover(el, {
+          content: sourceEl ? sourceEl.innerHTML : '',
+          html: true
         });
-    },
+      }
+    });
+  },
 
-    mask: function (options) {
-        var self = this;
-        $(':input').inputmask();
-    },
-
-    select2: function (options) {
-        var self = this;
-        $('.select2-input-field').each(function (index) {
-            var placeholder = $(this).attr('placeholder');
-            $(this).select2({
-                placeholder: placeholder,
-                theme: 'bootstrap-5'
-            });
-        });
-    },
-
-    textarea: function (options) {
-        if (this.isInternetExplorer() > 0) {
-            $('textarea').css('height', '500px');
-        }
-    },
-
-    isInternetExplorer: function () {
-        var userAgent = window.navigator.userAgent;
-        var indexOfUserAgent = userAgent.indexOf('MSIE');
-
-        if (indexOfUserAgent > 0) {
-            return parseInt(userAgent.substring(indexOfUserAgent + 5, userAgent.indexOf(".", indexOfUserAgent)));
-        } else if (!!window.navigator.userAgent.match(/Trident\/7\./)) {
-            return 11;
-        } else {
-            return 0;
-        }
+  /**
+   * Initialize Inputmask on all input elements (vanilla mode).
+   */
+  masks: function () {
+    if (typeof Inputmask !== 'undefined') {
+      Inputmask().mask(document.querySelectorAll('input'));
     }
+  },
+
+  /**
+   * Initialize TomSelect on .enhanced-select elements
+   */
+  enhancedSelects: function () {
+    document.querySelectorAll('.enhanced-select:not(.tomselected)').forEach(function (el) {
+      new TomSelect(el, {
+        allowEmptyOption: true
+      });
+    });
+  }
 };
+
+/**
+ * Boot the application once the DOM is ready
+ */
+document.addEventListener('DOMContentLoaded', function () {
+  AppCore.init();
+  AjaxPagination.init();
+  ModalConfirm.init();
+});

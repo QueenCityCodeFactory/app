@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace App;
 
 use App\Middleware\HostHeaderMiddleware;
+use App\Middleware\SessionTimeoutFilter;
 use Cake\Core\Configure;
 use Cake\Core\ContainerInterface;
 use Cake\Datasource\FactoryLocator;
@@ -58,6 +59,14 @@ class Application extends BaseApplication
 
         // $this->addPlugin('Authentication');
         // $this->addPlugin('Authorization');
+
+        // Suggested plugins — install via composer when needed:
+        // $this->addPlugin('Muffin/Trash');     // Soft-delete (trash) behavior for models
+        // $this->addPlugin('Muffin/Footprint'); // Auto-stamp created_by/modified_by from session
+        // $this->addPlugin('Muffin/Slug');      // Automatic slug generation for entities
+        // $this->addPlugin('Expose');           // UUID exposure to prevent ID enumeration
+        // $this->addPlugin('Queue');            // Database-backed job queue with admin panel
+
         $this->addPlugin('ButterCream', ['bootstrap' => true, 'routes' => false]);
         $this->addPlugin('CakePdf', ['bootstrap' => true, 'routes' => true]);
         $this->addPlugin('CakeSpreadsheet', ['bootstrap' => true, 'routes' => true]);
@@ -99,9 +108,24 @@ class Application extends BaseApplication
 
             // Cross Site Request Forgery (CSRF) Protection Middleware
             // https://book.cakephp.org/5/en/security/csrf.html#cross-site-request-forgery-csrf-middleware
-            ->add(new CsrfProtectionMiddleware([
-                'httponly' => true,
-            ]));
+            ->add((new CsrfProtectionMiddleware([
+                'httponly' => false,
+            ]))->skipCheckCallback(function ($request) {
+                // SessionMonitor calls — session-side CSRF token is
+                // gone once the session expires, so the check would
+                // always fail on re-login and ping.
+                if (in_array($request->getUri()->getPath(), ['/ping'])) {
+                    return true;
+                }
+                if ($request->is('ajax') && $request->getUri()->getPath() === '/login') {
+                    return true;
+                }
+
+                return false;
+            }))
+
+            // Track last-access time for the SessionMonitor JS.
+            ->add(new SessionTimeoutFilter());
 
         return $middlewareQueue;
     }

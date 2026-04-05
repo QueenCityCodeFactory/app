@@ -1,98 +1,98 @@
 /**
- * ModalConfirm - Used a confirmation boxes instead of standard javascript confirm.
- * Used with Custom CakePHP helpers for Twitter Bootstrap.
- * @type {Object}
+ * ModalConfirm - Bootstrap 5 confirmation modal dialogs.
+ * Replaces the default browser confirm() with Bootstrap modals.
+ * Works with ButterCream FormHelper::postLink and HtmlHelper::link.
+ * @type object
  */
 var ModalConfirm = {
 
-    /**
-     * Let's Bind our handlers
-     */
-    init: function (options) {
+  /**
+   * Build a confirmation modal DOM string.
+   * @param {object} opts {title, message, formName, href}
+   * @return {string}
+   */
+  buildModal: function (opts) {
+    var dataHref = opts.href ? ' data-href="' + AppUtil.escapeAttr(opts.href) + '"' : '';
+    var dataFormName = opts.formName ? ' data-form-name="' + AppUtil.escapeAttr(opts.formName) + '"' : '';
 
-        /**
-         * CakePHP Custom Helper FormHelper::postLink && HtmlHelper::link
-         * Need these event bindings for modal confirmation messages. It replaces
-         * the default vanilla javascript confirm that was built into the original
-         * CakePHP helpers
-         */
-        $('body').on('click', '.modal-confirm', function (event) {
-            event.preventDefault();
-            var formName = $(this).data('form-name');
-            var modalLink = $(this).data('modal-link');
-            var modal = $(this).data('modal');
-            var link = false;
-            var content = null;
-            var title = $(this).data('original-title');
-            var message = $(this).data('modal-message');
-            var dataHref = '';
-            var dataFormName = '';
+    return '<div class="modal fade">' +
+      '<div class="modal-dialog">' +
+        '<div class="modal-content">' +
+          '<div class="modal-header">' +
+            '<h4 class="modal-title">' + AppUtil.escapeAttr(opts.title) + '</h4>' +
+          '</div>' +
+          '<div class="modal-body">' + AppUtil.escapeAttr(opts.message) + '</div>' +
+          '<div class="modal-footer">' +
+            '<button type="button" class="btn btn-default js-modal-button-close" data-bs-dismiss="modal">No</button>' +
+            '<button type="button" class="btn btn-danger js-modal-button-submit"' + dataFormName + dataHref + '>Yes</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  },
 
-            // if title is not set look for title attr
-            if (!title) {
-                title = $(this).attr('title');
-            }
+  init: function () {
+    var self = this;
 
-            // if title still not set, set a default
-            if (!title) {
-                title = 'Please Confirm!';
-            }
+    // Modal confirm trigger
+    document.body.addEventListener('click', function (event) {
+      var trigger = event.target.closest('.modal-confirm');
+      if (!trigger) return;
+      event.preventDefault();
 
-            // Set the link
-            if (modalLink) {
-                link = $(this).attr('href');
-            }
+      var formName = trigger.dataset.formName;
+      var modalLink = trigger.dataset.modalLink;
+      var modal = trigger.dataset.modal;
+      var title = trigger.dataset.originalTitle || trigger.getAttribute('title') || 'Please Confirm!';
+      var message = trigger.dataset.modalMessage || 'Are you sure you want to continue?';
+      var link = modalLink ? trigger.getAttribute('href') : false;
 
-            // Set default message
-            if (!message) {
-                message = 'Are you sure you want to continue?';
-            }
+      if (modal) {
+        var html = self.buildModal({title: title, message: message, formName: formName, href: link});
+        var wrapper = document.createElement('div');
+        wrapper.innerHTML = html;
+        var modalEl = wrapper.firstChild;
+        document.body.appendChild(modalEl);
 
-            // Modal must be set to 1
-            if (modal) {
-                if (link) {
-                    dataHref = ' data-href="' + link + '"';
-                }
-                if (formName) {
-                    dataFormName = ' data-form-name="' + formName + '"';
-                }
-                content = $.templates('#modal-template').render({
-                    title: title,
-                    html: message,
-                    buttons: [
-                        {
-                            button: '<button type="button" class="btn btn-default js-modal-button-close" data-bs-dismiss="modal">No</button>'
-                        },
-                        {
-                            button: '<button type="button" class="btn btn-danger js-modal-button-submit"' + dataFormName + dataHref + '>Yes</button>'
-                        }
-                    ]
-                });
-                $(content).modal('show').on('hidden.bs.modal', function (event) {
-                    $(this).remove();
-                }).on('shown.bs.modal', function (event) {
-                    $('.js-modal-button-close').trigger('focus');
-                });
-            } else if (formName) {
-                $('form[name="' + $(this).data('form-name') + '"]').trigger('submit');
-            }
+        var bsModal = new bootstrap.Modal(modalEl);
+        bsModal.show();
 
-            $(this).trigger('blur');
+        modalEl.addEventListener('hidden.bs.modal', function () {
+          bsModal.dispose();
+          modalEl.remove();
         });
-
-        /**
-         * This is the event binding for the "Yes" button for the modal confirmation
-         */
-        $('body').on('click', '.js-modal-button-submit', function (event) {
-            event.preventDefault();
-            var formName = $(this).data('form-name');
-            var href = $(this).data('href');
-            if (formName) {
-                $('form[name="' + $(this).data('form-name') + '"]').trigger('submit');
-            } else if (href) {
-                $(location).attr('href', href);
-            }
-            $(this).closest('.modal').modal('hide');
+        modalEl.addEventListener('shown.bs.modal', function () {
+          var closeBtn = modalEl.querySelector('.js-modal-button-close');
+          if (closeBtn) closeBtn.focus();
         });
-    }
+      } else if (formName) {
+        var form = document.querySelector('form[name="' + formName + '"]');
+        if (form) form.submit();
+      }
+
+      trigger.blur();
+    });
+
+    // "Yes" button handler
+    document.body.addEventListener('click', function (event) {
+      var btn = event.target.closest('.js-modal-button-submit');
+      if (!btn) return;
+      event.preventDefault();
+
+      var formName = btn.dataset.formName;
+      var href = btn.dataset.href;
+      if (formName) {
+        var form = document.querySelector('form[name="' + formName + '"]');
+        if (form) form.submit();
+      } else if (href) {
+        window.location.href = href;
+      }
+
+      var modalEl = btn.closest('.modal');
+      if (modalEl) {
+        var bsModal = bootstrap.Modal.getInstance(modalEl);
+        if (bsModal) bsModal.hide();
+      }
+    });
+  }
 };

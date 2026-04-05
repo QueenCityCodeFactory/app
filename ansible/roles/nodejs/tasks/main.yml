@@ -45,6 +45,14 @@
     group: "{{ nodejs_user }}"
     mode: "0644"
 
+- name: Deploy nvm zshenv for non-interactive shells
+  template:
+    src: zshenv.j2
+    dest: "{{ nodejs_user_home }}/.zshenv"
+    owner: "{{ nodejs_user }}"
+    group: "{{ nodejs_user }}"
+    mode: "0644"
+
 - name: Install Node {{ nodejs_version }}
   become: true
   become_user: "{{ nodejs_user }}"

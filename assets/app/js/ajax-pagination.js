@@ -1,180 +1,162 @@
 /**
- * AjaxPagination - Bind event handlers needed for Ajax pagination for CakePHP.
- * Must use custom CakePHP Bake Scripts and Non-Stock templates and helpers
- * @type object
- */
-var AjaxPagination = {
-
-    /**
-     * Let's init the object and bind the handlers
-     */
-    init: function (options) {
-
-        var self = this;
-
-        // Let's loop over all of the .ajax-pagination elements
-        $('.ajax-pagination').each(function (index) {
-            AppAjax.loadAjaxView($(this));
-        });
-
-        // Do some event handling on the click of any ajax links within element
-        $('.ajax-pagination').on('click', '.ajax-pagination-link', function (event) {
-            event.preventDefault();
-            var url = $(this).attr('href');
-            var container = $(this).data('update');
-            var request = $.ajax({
-                currentLink: true,
-                dataType: "html",
-                evalScripts: true,
-                url: url
-            });
-            request.done(function (response) {
-                $(container).html(response);
-                AjaxBind.init();
-            });
-            request.fail(function (jqXHR, textStatus) {
-                PopTart.error(textStatus);
-            });
-        });
-
-        // Ajax element form submission (Ex. Search Form) for ajax paginated elements
-        $('.ajax-pagination').on('submit', '.ajax-search-form', function (event) {
-            event.preventDefault();
-            var container = $(this).data('update');
-            var data = $(this).serialize();
-            var url = $(this).data('url');
-            var request = $.ajax({
-                currentLink: true,
-                url: url,
-                type: 'GET',
-                data: data,
-                dataType: "html",
-                evalScripts: true
-            });
-            request.done(function (response) {
-                $(container).html(response);
-                AjaxBind.init();
-            });
-            request.fail(function (jqXHR, textStatus) {
-                PopTart.error('We have encountered an error! Please refresh and try again!', 'Search Error');
-            });
-        });
-
-        $('.ajax-pagination').on('change', '.ajax-set-pagination-limit', function (event) {
-            var limit = $(this).val();
-            var container = $(this).data('update');
-            var url = $(this).data('url');
-            var querystingRegex = /\?/i;
-            var limitRegex = /(\?|&)limit=/i;
-
-            if (!(url !== null && url !== '' && url !== undefined)) {
-                return false;
-            }
-
-            if (!(limit !== null && limit !== '' && limit !== undefined)) {
-                limit = 20;
-            }
-
-            if (limitRegex.exec(url) !== null) {
-                url = url.replace(/([\?&])(limit=)[^&#]*/, '$1$2' + limit);
-            } else {
-                if (querystingRegex.exec(url) !== null) {
-                    url = url + '&limit=' + limit;
-                } else {
-                    url = url + '?limit=' + limit;
-                }
-            }
-
-            var request = $.ajax({
-                currentLink: true,
-                dataType: "html",
-                evalScripts: true,
-                url: url
-            });
-            request.done(function (response) {
-                $(container).html(response);
-                AjaxBind.init();
-            });
-            request.fail(function (jqXHR, textStatus) {
-                PopTart.error(textStatus);
-            });
-        });
-    }
-};
-
-/**
- * AppAjax - Common Ajax Helper Functions for the Custom App
+ * AppAjax - Shared AJAX helper for fetching HTML and injecting into containers.
+ * Closes Bootstrap dropdowns inside the target before replacement to avoid orphans.
+ * Calls AppCore.init() after injection to rebind tooltips, popovers, masks, etc.
  * @type object
  */
 var AppAjax = {
 
-    // Load some html content via ajax then bind handlers
-    loadAjaxView: function (obj) {
-        var id = obj.data('id');
-        var url = obj.data('url');
+  /**
+   * Fetch HTML from a URL, inject into a container, and rebind handlers.
+   * @param {string} url The URL to fetch
+   * @param {HTMLElement} container The element to inject HTML into
+   * @param {string} [errorMessage] Optional error message (defaults to status text)
+   */
+  fetchAndInject: function (url, container, errorMessage) {
+    // Dismiss any open Bootstrap dropdowns inside the container before replacing
+    container.querySelectorAll('.dropdown-menu.show').forEach(function (menu) {
+      var toggle = menu.parentElement.querySelector('[data-bs-toggle="dropdown"]');
+      if (toggle) {
+        var instance = bootstrap.Dropdown.getInstance(toggle);
+        if (instance) instance.hide();
+      }
+    });
 
-        if (!(url !== null && url !== '' && url !== undefined)) {
-            return false;
-        }
+    fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function (response) {
+        if (!response.ok) throw new Error(response.statusText);
+        return response.text();
+      })
+      .then(function (html) {
+        container.innerHTML = html;
+        AppCore.init();
+      })
+      .catch(function (err) {
+        PopTart.error(errorMessage || err.message);
+      });
+  },
 
-        obj.load(url, function () {
-            AjaxBind.init();
-        });
-    }
+  /**
+   * Build a full URL from a base URL and a FormData/form element, merging params.
+   * @param {string} baseUrl The base URL (may already have query params)
+   * @param {HTMLFormElement} form The form to serialize
+   * @return {string}
+   */
+  buildFormUrl: function (baseUrl, form) {
+    var url = new URL(baseUrl, window.location.origin);
+    new FormData(form).forEach(function (value, key) {
+      url.searchParams.set(key, value);
+    });
+    return url.toString();
+  },
+
+  /**
+   * Load HTML content via fetch into an element that carries a data-url attribute.
+   * @param {HTMLElement} el The element to load content into
+   */
+  loadAjaxView: function (el) {
+    var url = el.dataset.url;
+    if (!url) return;
+    this.fetchAndInject(url, el);
+  }
 };
 
 /**
- * AjaxBind will bind all event handlers that need reestablished for the content to work correctly.
- *
- * @type Object
+ * AjaxPagination - Delegated event handlers for AJAX pagination, search forms,
+ * clear buttons, and page-limit selects. Works in both standalone and relatedData contexts.
+ * @type object
  */
-var AjaxBind = {
+var AjaxPagination = {
 
-    /**
-     * Load all event handlers
-     */
-    init: function (options) {
-        var self = this;
-        self.touchstart(options);
-        self.popover(options);
-        self.htmlPopover(options);
-        self.mask(options);
-        self.select2(options);
-    },
+  /**
+   * Initialize: load deferred views and bind delegated handlers on document.body.
+   */
+  init: function () {
+    // Load initial ajax-pagination views
+    document.querySelectorAll('.ajax-pagination').forEach(function (el) {
+      AppAjax.loadAjaxView(el);
+    });
 
-    /**
-     * Load just the touchstart handler
-     */
-    touchstart: function (options) {
-        var self = this;
-        AppCore.touchstart(options);
-    },
+    // Pagination link click (AJAX)
+    document.body.addEventListener('click', function (event) {
+      var link = event.target.closest('.ajax-pagination .ajax-pagination-link');
+      if (!link) return;
+      event.preventDefault();
+      var url = link.getAttribute('href');
+      var container = document.querySelector(link.dataset.update);
+      if (!url || !container) return;
 
-    /**
-     * Load just the popover handler
-     */
-    popover: function (options) {
-        var self = this;
-        AppCore.popover(options);
-    },
+      AppAjax.fetchAndInject(url, container);
+    });
 
-    /**
-     * Load just the html popover handler
-     */
-    htmlPopover: function (options) {
-        var self = this;
-        AppCore.htmlPopover(options);
-    },
+    // Search/filter form submission (AJAX)
+    document.body.addEventListener('submit', function (event) {
+      var form = event.target.closest('.ajax-pagination .ajax-search-form');
+      if (!form) return;
+      event.preventDefault();
+      var container = document.querySelector(form.dataset.update);
+      var url = form.dataset.url;
+      if (!url || !container) return;
 
-    /**
-     * Load just the mask handler
-     */
-    mask: function (options) {
-        var self = this;
-        AppCore.mask(options);
-    },
+      AppAjax.fetchAndInject(AppAjax.buildFormUrl(url, form), container);
+    });
 
-    select2: function (options) {
-        AppCore.select2(options);
-    }
+    // Page-limit change (AJAX variant)
+    document.body.addEventListener('change', function (event) {
+      var select = event.target.closest('.ajax-pagination .ajax-set-pagination-limit');
+      if (!select) return;
+      var container = document.querySelector(select.dataset.update);
+      var url = select.dataset.url;
+      if (!url || !container) return;
+
+      var urlObj = new URL(url, window.location.origin);
+      urlObj.searchParams.set('limit', select.value || '20');
+
+      AppAjax.fetchAndInject(urlObj.toString(), container);
+    });
+
+    // Page-limit change (non-AJAX, full page reload)
+    document.body.addEventListener('change', function (event) {
+      var select = event.target.closest('.set-pagination-limit');
+      if (!select) return;
+
+      var base = select.dataset.url || window.location.href;
+      var url = new URL(base, window.location.origin);
+      url.searchParams.set('limit', select.value || '20');
+      window.location = url.toString();
+    });
+
+    // Clear search/filter button
+    document.body.addEventListener('click', function (event) {
+      var btn = event.target.closest('.clear-search-btn');
+      if (!btn) return;
+      event.preventDefault();
+
+      var form = btn.closest('form');
+      if (!form) return;
+
+      // Reset all fields except those marked with data-keep-value
+      form.querySelectorAll('input:not([data-keep-value="1"])').forEach(function (el) {
+        if (el.type === 'checkbox' || el.type === 'radio') {
+          el.checked = false;
+        } else if (el.type !== 'submit' && el.type !== 'button') {
+          el.value = '';
+        }
+      });
+      form.querySelectorAll('select:not([data-keep-value="1"])').forEach(function (el) {
+        if (el.tomselect) {
+          el.tomselect.clear();
+        } else {
+          el.value = '';
+        }
+      });
+
+      // Re-submit: AJAX if applicable, otherwise standard submit
+      if (form.classList.contains('ajax-search-form')) {
+        form.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
+      } else {
+        form.submit();
+      }
+    });
+  }
 };

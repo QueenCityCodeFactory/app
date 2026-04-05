@@ -2,6 +2,16 @@
     @include button-size($btn-padding-y-xs, $btn-padding-x-xs, $btn-font-size-xs, $btn-border-radius-xs);
 }
 
+.btn-sq-lg,
+.btn-sq,
+.btn-sq-sm,
+.btn-sq-xs {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+}
+
 .btn-sq-lg {
     width: 2.75rem !important;
     height: 2.75rem !important;

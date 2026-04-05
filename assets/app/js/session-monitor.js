@@ -1,23 +1,36 @@
-var SessionMonitor = function($element, options) {
-  this.container = $element;
-  this.lastPingTime = moment().unix();
+/**
+ * SessionMonitor - Tracks user activity, warns before session expiration,
+ * and provides an in-page re-login modal.
+ *
+ * Modernized vanilla-JS port of the pups-2.0-core session monitor.
+ * No jQuery, moment, jsrender, or jquery-countdown dependencies.
+ *
+ * Configuration is read from data attributes on the body element:
+ *   data-session-timeout     — session length in minutes
+ *   data-last-access-time    — unix timestamp of last server access
+ *   data-session-username    — current user's username
+ *   data-session-user-email  — current user's email
+ *
+ * @param {HTMLElement} container The body element
+ */
+var SessionMonitor = function (container) {
+  this.container = container;
+  this.lastPingTime = Math.floor(Date.now() / 1000);
 
-  if (this.sessionLength === null || this.sessionLength === undefined || this.sessionLength === '') {
-      if (window.sessionTimeout !== null && window.sessionTimeout !== undefined && window.sessionTimeout !== '') {
-          this.sessionLength = parseInt(window.sessionTimeout) * 60;
-      } else {
-          this.sessionLength = 900; // 15 Minutes AKA 900 Seconds
-      }
-  }
+  var bodyData = container.dataset;
+  var timeoutMin = parseInt(bodyData.sessionTimeout, 10);
+  this.sessionLength = timeoutMin ? timeoutMin * 60 : 900;
+  this.sessionTimeoutMinutes = timeoutMin || 15;
+  this.sessionUserName = bodyData.sessionUsername || '';
+  this.sessionUserEmail = bodyData.sessionUserEmail || '';
 
-  if (this.lastAccessTime === null || this.lastAccessTime === undefined || this.lastAccessTime === '') {
-      if (window.lastAccessTime !== null && window.lastAccessTime !== undefined && window.lastAccessTime !== '') {
-          this.lastAccessTime = parseInt(window.lastAccessTime);
-      } else {
-          this.lastAccessTime = this.lastPingTime;
-      }
-
-      localStorage.setItem('lastAccessTime', this.lastAccessTime);
+  if (this.lastAccessTime === null) {
+    if (bodyData.lastAccessTime) {
+      this.lastAccessTime = parseInt(bodyData.lastAccessTime, 10);
+    } else {
+      this.lastAccessTime = this.lastPingTime;
+    }
+    localStorage.setItem('lastAccessTime', this.lastAccessTime);
   }
 
   this.startup();
@@ -25,504 +38,428 @@ var SessionMonitor = function($element, options) {
 
 SessionMonitor.prototype = {
 
-  /**
-   * The container
-   * @type jQuery Object
-   */
   container: null,
-
-  /**
-   * What selectors to listen on for the activity events for the ping
-   */
-  listeningSelectors: [':input', '.main-wrapper'],
-
-  /**
-   * What events to listen to for the ping
-   */
-  activityEvents: 'mouseup keyup mousemove',
-
-  /**
-   * How long is the session in seconds
-   */
   sessionLength: null,
-
-  /**
-   * The last time the server was accessed
-   */
+  sessionTimeoutMinutes: null,
+  sessionUserName: '',
+  sessionUserEmail: '',
   lastAccessTime: null,
-
-  /**
-   * When we last pinged the server
-   */
   lastPingTime: null,
-
-  /**
-   * The url to ping to see if the session is still alive. It also extends the session
-   */
   pingUrl: '/ping?session_timeout=extend',
-
-  /**
-   * The logout URL
-   */
   logoutUrl: '/logout',
-
-  /**
-   * The login URL
-   */
   loginUrl: '/login',
-
-  /**
-   * The setTimeout Object for warnings
-   */
   warningTimeoutID: null,
-
-  /**
-   * The setTimeout Object for expirations
-   */
   expirationTimeoutID: null,
+  countdownIntervalID: null,
 
   /**
-   * The function that starts it all
-   * @return void
+   * Read the CSRF token from the cookie.
+   * @return {string}
    */
-  startup: function () {
-      this.bindHandlers();
+  csrfToken: function () {
+    var match = document.cookie.match('(^|;)\\s*csrfToken\\s*=\\s*([^;]+)');
+    return match ? match.pop() : '';
   },
 
-  /**
-   * Bind the handlers
-   * @return void
-   */
+  startup: function () {
+    this.bindHandlers();
+  },
+
   bindHandlers: function () {
-      var self = this;
-      var extendCallBack = function (event) {
-          self.extend.bind(self)(); // Bind self to this, then call extend
-      };
-      // Let's only ping the session on certain events
-      $(self.listeningSelectors.join(', ')).on(self.activityEvents, extendCallBack);
+    var self = this;
 
-      // Listen for changes to the localStorage for the lastAccessTime
-      $(window).on('storage', function (event) {
-          var storageEvent = event.originalEvent;
-          var now = moment().unix();
-          if (storageEvent.key == 'lastAccessTime') {
-              var newValue = parseInt(localStorage.getItem('lastAccessTime'));
-              self.clearTimers.bind(self)();
-              if (newValue === undefined || newValue === null || newValue === 'null' || isNaN(newValue)) {
-                  self.loadLoginModal.bind(self)();
-              }
-              if (newValue < (now + self.sessionLength)) {
-                  // clear any old modals
-                  self.clearWarningModal.bind(self)();
-                  self.clearExpirationModal.bind(self)();
+    // Activity listeners — delegated on document
+    var extendCb = function () { self.extend(); };
+    document.addEventListener('mouseup', extendCb);
+    document.addEventListener('keyup', extendCb);
+    document.addEventListener('mousemove', extendCb);
 
-                  // Reset the timers
-                  self.setWarningTimeout.bind(self)();
-                  self.setExpirationTimeout.bind(self)();
-              }
-          }
-      });
+    // Cross-tab sync via localStorage
+    window.addEventListener('storage', function (event) {
+      if (event.key !== 'lastAccessTime') return;
+      var newValue = parseInt(localStorage.getItem('lastAccessTime'), 10);
+      self.clearTimers();
+      if (newValue === undefined || newValue === null || isNaN(newValue)) {
+        self.loadLoginModal();
+        return;
+      }
 
-      // Set the timers
+      // Another tab pinged — clear modals and reset timers
+      self.clearWarningModal();
+      self.clearExpirationModal();
       self.setWarningTimeout();
       self.setExpirationTimeout();
+    });
+
+    // Start the timers
+    self.setWarningTimeout();
+    self.setExpirationTimeout();
   },
 
   /**
-   * How often we are pinging the server - 1 minute
-   * @return int
+   * Minimum seconds between pings — throttles activity-based pinging.
+   * @return {number}
    */
   minPingInterval: function () {
-      var self = this;
-      if (self.sessionLength > 600) {
-          return 120; // 2 minutes
-      }
-      if (self.sessionLength > 300) {
-          return 60; // 1 minute
-      }
-
-      return 5; // 5 Seconds
+    if (this.sessionLength > 600) return 120;
+    if (this.sessionLength > 300) return 60;
+    return 5;
   },
 
   /**
-   * When to show the warning message - 3 minutes before
-   * @return int
+   * Seconds before expiry to show the warning countdown.
+   * @return {number}
    */
   timeBeforeWarning: function () {
-      var self = this;
-      if (window.sessionTimeout >= 10) {
-          return 180; // 3 Minutes
-      }
-      if (window.sessionTimeout >= 5) {
-          return 60; // 1 minute
-      }
-
-      return 15; // 15 Seconds
+    if (this.sessionTimeoutMinutes >= 10) return 180;
+    if (this.sessionTimeoutMinutes >= 5) return 60;
+    return 15;
   },
 
-  /**
-   * Clear the timers
-   * @return void
-   */
   clearTimers: function () {
-      window.clearTimeout(this.warningTimeoutID);
-      window.clearTimeout(this.expirationTimeoutID);
+    window.clearTimeout(this.warningTimeoutID);
+    window.clearTimeout(this.expirationTimeoutID);
+    if (this.countdownIntervalID) {
+      window.clearInterval(this.countdownIntervalID);
+      this.countdownIntervalID = null;
+    }
   },
 
   /**
-   * Set the Warning Timer
+   * Warning fires (sessionLength - timeBeforeWarning) seconds from now.
    */
   setWarningTimeout: function () {
-      var self = this;
-      var timeout = (self.sessionLength - self.timeBeforeWarning()) * 1000; // Convert to milliseconds by multiplying by 1000
-      self.warningTimeoutID = window.setTimeout(function () {
-          self.onWarning.bind(self)();
-      }, timeout);
+    var self = this;
+    var timeout = (self.sessionLength - self.timeBeforeWarning()) * 1000;
+    self.warningTimeoutID = window.setTimeout(function () {
+      self.onWarning();
+    }, timeout);
   },
 
   /**
-   * Set the Expiration Timer
+   * Expiration fires sessionLength seconds from now.
    */
   setExpirationTimeout: function () {
-      var self = this;
-      var timeout = self.sessionLength * 1000; // Convert to milliseconds by multiplying by 1000
-      self.expirationTimeoutID = window.setTimeout(function () {
-          self.onTimeout.bind(self)();
-      }, timeout);
+    var self = this;
+    var timeout = self.sessionLength * 1000;
+    self.expirationTimeoutID = window.setTimeout(function () {
+      self.onTimeout();
+    }, timeout);
   },
 
-  /**
-   * Logout Method - Redirects to logout url
-   * @return void
-   */
   logout: function () {
-      var self = this;
-      localStorage.setItem('lastAccessTime', null);
-      window.location.href = self.logoutUrl;
+    localStorage.setItem('lastAccessTime', null);
+    window.location.href = this.logoutUrl;
   },
 
-  /**
-   * OnWarning Method Calls any warning code
-   * @return void
-   */
   onWarning: function () {
-      var self = this;
-      self.loadWarningModal();
+    this.loadWarningModal();
   },
 
-  /**
-   * OnTimeout - The session has expired, handle any actions here
-   * @return void
-   */
   onTimeout: function () {
-      var self = this;
-      self.onBeforeTimeout();
-      self.loadLoginModal();
+    this.loadLoginModal();
   },
 
   /**
-   * Called before time out happens. Auto save could be added here.
-   * @return void
-   */
-  onBeforeTimeout: function () {
-      var self = this;
-  },
-
-  /**
-   * Extend the session if after min interval
-   * @return void
+   * Called on user activity. Pings server if enough time has passed.
+   * Skipped when the login modal is showing — the session is expired and
+   * pinging would race with the modal's own login request.
    */
   extend: function () {
-      var self = this;
-      var now = moment().unix();
-      var timeSinceLastPing = now - self.lastPingTime;
-      if (timeSinceLastPing > self.minPingInterval()) {
-          self.reset(now);
-      }
+    if (document.getElementById('session-expired-modal')) return;
+    var now = Math.floor(Date.now() / 1000);
+    if ((now - this.lastPingTime) > this.minPingInterval()) {
+      this.reset(now);
+    }
   },
 
   /**
-   * Reset the timers
-   * @return void
+   * Ping the server and reset all timers on success.
    */
   reset: function (now) {
-      var self = this;
-      self.lastPingTime = now;
+    var self = this;
+    self.lastPingTime = now;
 
-      var callback = function (timestamp) {
-          self.clearTimers.bind(self)();
-          localStorage.setItem('lastAccessTime', timestamp);
-          self.lastAccessTime = timestamp;
-          if (timestamp !== false && timestamp !== null && timestamp !== undefined) {
-              self.setWarningTimeout.bind(self)();
-              self.setExpirationTimeout.bind(self)();
-          } else {
-              self.loadLoginModal.bind(self)();
-          }
-      };
-
-      self.ping(callback);
+    self.ping(function (timestamp) {
+      self.clearTimers();
+      localStorage.setItem('lastAccessTime', timestamp);
+      self.lastAccessTime = timestamp;
+      if (timestamp !== false && timestamp !== null && timestamp !== undefined) {
+        self.setWarningTimeout();
+        self.setExpirationTimeout();
+      } else {
+        self.loadLoginModal();
+      }
+    });
   },
 
   /**
-   * Ping the webserver to keep session alive
-   * @return void
+   * POST to the ping endpoint. Returns timestamp on success, false on 403, null on error.
    */
   ping: function (callback) {
-      var request = $.ajax({
-          type: 'POST',
-          url: this.pingUrl,
-          dataType: 'json'
-      });
-
-      request.done(function (response) {
-          callback(response.timestamp);
-      });
-
-      request.fail(function (jqXHR, textStatus) {
-          var lastAccessTime = null;
-          if (jqXHR.status === 403) {
-              lastAccessTime = false;
-          }
-          callback(lastAccessTime);
-      });
+    fetch(this.pingUrl, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-Token': this.csrfToken()
+      }
+    })
+    .then(function (response) {
+      if (response.status === 403) return { _result: false };
+      if (!response.ok) return { _result: null };
+      return response.json();
+    })
+    .then(function (data) {
+      if (!data) { callback(null); return; }
+      if (data._result === false) { callback(false); return; }
+      if (data._result === null) { callback(null); return; }
+      if (data.timestamp !== undefined) { callback(data.timestamp); return; }
+      callback(null);
+    })
+    .catch(function () {
+      callback(null);
+    });
   },
 
   /**
-   * Clear the warning modal
-   * @return void
+   * Build a Bootstrap 5 modal HTML string.
+   * @param {object} opts
+   * @return {string}
    */
+  buildModal: function (opts) {
+    var backdrop = opts.staticBackdrop ? ' data-bs-backdrop="static" data-bs-keyboard="false"' : '';
+    var idAttr = opts.id ? ' id="' + opts.id + '"' : '';
+    return '<div' + idAttr + ' class="modal fade"' + backdrop + '>' +
+      '<div class="modal-dialog">' +
+        '<div class="modal-content">' +
+          '<div class="modal-header">' +
+            '<h4 class="modal-title">' + opts.title + '</h4>' +
+          '</div>' +
+          '<div class="modal-body">' + opts.body + '</div>' +
+          '<div class="modal-footer">' + opts.footer + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  },
+
   clearWarningModal: function () {
-      var warningModal = $('#session-warning-modal');
-      if (warningModal.length > 0) {
-          warningModal.modal('hide').on('hidden.bs.modal', function () {
-              $('body').off('click', '#session-warning-modal-continue-btn');
-              $('body').off('click', '#session-warning-modal-logout-btn');
-              $(this).remove();
-          });
-      }
+    var el = document.getElementById('session-warning-modal');
+    if (!el) return;
+    if (this.countdownIntervalID) {
+      window.clearInterval(this.countdownIntervalID);
+      this.countdownIntervalID = null;
+    }
+    var instance = bootstrap.Modal.getInstance(el);
+    if (instance) instance.dispose();
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) backdrop.remove();
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
+    el.remove();
   },
 
-  /**
-   * Clear the expiration modal
-   * @return void
-   */
   clearExpirationModal: function () {
-      var expiredModal = $('#session-expired-modal');
-      if (expiredModal.length > 0) {
-          expiredModal.modal('hide').on('hidden.bs.modal', function (event) {
-              $('.main-wrapper').removeClass('blur');
-              $('body').removeClass('modal-open');
-              $('body').off('keypress', '#session-expired-modal input');
-              $('body').off('click', '#session-expired-modal-login-btn');
-              $('body').off('click', '#session-expired-modal-logout-btn');
-              $(this).remove();
-          });
-      }
+    var el = document.getElementById('session-expired-modal');
+    if (!el) return;
+    var instance = bootstrap.Modal.getInstance(el);
+    if (instance) instance.dispose();
+    document.querySelector('.main-wrapper')?.classList.remove('blur');
+    // Remove the backdrop manually since dispose() doesn't always clean it up
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) backdrop.remove();
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
+    el.remove();
   },
 
-  /**
-   * Load the login modal for when session expires
-   * @return void
-   */
   loadLoginModal: function () {
-      var self = this;
+    var self = this;
+    if (document.getElementById('session-expired-modal')) return;
+    self.clearWarningModal();
 
-      // Only continue if the modal is not there.
-      if ($('#session-expired-modal').length > 0) {
-          return;
+    var body = '<div id="expired-alert-message" class="alert alert-danger">Your session has expired due to inactivity.</div>' +
+      '<div class="mb-3">' +
+        '<label class="form-label" for="expired-username">Username or Email</label>' +
+        '<div class="input-group">' +
+          '<span class="input-group-text"><i class="fa fa-at"></i></span>' +
+          '<input type="text" name="username" autocomplete="off" id="expired-username" class="form-control">' +
+        '</div>' +
+      '</div>' +
+      '<div class="mb-3">' +
+        '<label class="form-label" for="expired-password">Password</label>' +
+        '<div class="input-group">' +
+          '<span class="input-group-text"><i class="fa fa-key"></i></span>' +
+          '<input type="password" name="password" autocomplete="off" id="expired-password" class="form-control">' +
+        '</div>' +
+      '</div>';
+
+    var footer = '<button id="session-expired-modal-logout-btn" type="button" class="btn btn-danger">Logout <i class="fa-solid fa-sign-out-alt"></i></button>' +
+      '<button id="session-expired-modal-login-btn" type="button" class="btn btn-success"><i class="fa-solid fa-sign-in-alt"></i> Login</button>';
+
+    var html = self.buildModal({
+      id: 'session-expired-modal',
+      title: 'Login to Continue',
+      body: body,
+      footer: footer,
+      staticBackdrop: true
+    });
+    var wrapper = document.createElement('div');
+    wrapper.innerHTML = html;
+    var modalEl = wrapper.firstChild;
+    document.body.appendChild(modalEl);
+
+    new bootstrap.Modal(modalEl, {backdrop: 'static', keyboard: false}).show();
+
+    modalEl.addEventListener('shown.bs.modal', function () {
+      document.querySelector('.main-wrapper')?.classList.add('blur');
+    });
+
+    document.getElementById('session-expired-modal-logout-btn').addEventListener('click', function (e) {
+      e.preventDefault();
+      self.logout();
+    });
+    document.getElementById('session-expired-modal-login-btn').addEventListener('click', function (e) {
+      e.preventDefault();
+      self.login();
+    });
+    modalEl.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter' && e.target.closest('input')) {
+        e.preventDefault();
+        self.login();
       }
-
-      // Make sure the warning modal has been removed
-      self.clearWarningModal();
-
-      var content = $.templates('#modal-template').render({
-          id: 'session-expired-modal',
-          title: 'Login to Continue',
-          html: false,
-          buttons: [
-              {
-                  button: '<button id="session-expired-modal-logout-btn" type="button" class="btn btn-danger">Logout <i class="fa-solid fa-sign-out-alt"></i></button>'
-              },
-              {
-                  button: '<button id="session-expired-modal-login-btn" type="button" class="btn btn-success"><i class="fa-solid fa-sign-in-alt"></i> Login</button>'
-              }
-          ],
-          login: true,
-          closeButton: false
-      });
-
-      $('body').append(content);
-      $('#session-expired-modal').modal({
-          "backdrop": "static",
-          "keyboard": false,
-          "show": true
-      }).on('shown.bs.modal', function (event) {
-          $('.main-wrapper').addClass('blur');
-          $('body').addClass('modal-open');
-      });
-      $('body').off('click', '#session-expired-modal-logout-btn');
-      $('body').on('click', '#session-expired-modal-logout-btn', function (event) {
-          event.preventDefault();
-          self.logout.bind(self)();
-      });
-      $('body').off('click', '#session-expired-modal-login-btn');
-      $('body').on('click', '#session-expired-modal-login-btn', function (event) {
-          event.preventDefault();
-          self.login.bind(self)();
-      });
-      $('body').off('keypress', '#session-expired-modal input');
-      $('body').on('keypress', '#session-expired-modal input', function (event) {
-          if (event.keyCode == 13) {
-              event.preventDefault();
-              self.login.bind(self)();
-          }
-      });
+    });
   },
 
   /**
-   * Login Request Via Ajax
-   * @return void
+   * AJAX login from the expired modal.
    */
   login: function () {
-      var self = this;
+    var self = this;
+    var alertEl = document.getElementById('expired-alert-message');
+    var usernameInput = document.getElementById('expired-username');
+    var passwordInput = document.getElementById('expired-password');
 
-      var successfulLogin = function(){
-          self.lastPingTime = moment().unix();
-          self.clearExpirationModal.bind(self)();
-          self.reset.bind(self)(moment().unix());
-      };
+    var successfulLogin = function () {
+      var now = Math.floor(Date.now() / 1000);
+      self.lastPingTime = now;
+      self.lastAccessTime = now;
+      self.clearTimers();
+      self.clearExpirationModal();
+      localStorage.setItem('lastAccessTime', now);
+      self.setWarningTimeout();
+      self.setExpirationTimeout();
+    };
 
-      var unsuccessfulLogin = function(message){
-          $("#expired-alert-message").html(message);
-          $('#expired-username').val('');
-          $('#expired-password').val('');
-      };
+    var unsuccessfulLogin = function (message) {
+      if (alertEl) alertEl.textContent = message;
+      if (usernameInput) usernameInput.value = '';
+      if (passwordInput) passwordInput.value = '';
+    };
 
-      var userName = $('#expired-username').val().trim();
-      if (userName !== window.sessionUserName && userName !== window.sessionUserEmail) {
-          unsuccessfulLogin('Username or Email does not match the last logged in user for this page. Only the original user can log back in to this page.');
-          return;
+    var userName = (usernameInput ? usernameInput.value : '').trim();
+    if (userName !== self.sessionUserName && userName !== self.sessionUserEmail) {
+      unsuccessfulLogin('Username or Email does not match the last logged in user for this page. Only the original user can log back in to this page.');
+      return;
+    }
+
+    fetch(self.loginUrl, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-Token': self.csrfToken()
+      },
+      body: 'email=' + encodeURIComponent(userName) + '&password=' + encodeURIComponent(passwordInput.value)
+    })
+    .then(function (response) {
+      if (!response.ok) throw new Error('Request failed');
+      return response.json();
+    })
+    .then(function (data) {
+      if (data.response.success === true) {
+        successfulLogin();
+      } else {
+        unsuccessfulLogin(data.response.message);
       }
-      var request = $.ajax({
-          type: 'POST',
-          url: self.loginUrl,
-          dataType: 'json',
-          data: {
-              email: $('#expired-username').val(),
-              password: $('#expired-password').val()
-          }
-      });
-
-      request.done(function (response) {
-          if (response.response.success === true && response.response.tfa === true) {
-              $("#expired-alert-message").html('Two Factor Authentication needed; Please scan card');
-              toastr.info('Two Factor Authentication needed; Please scan card');
-              var tfa = new TwoFactorAuth(
-                  function successFn(data) {
-                      toastr.success('Card has been scanned');
-                      $.ajax({
-                          type: 'POST',
-                          url: self.loginUrl,
-                          dataType: 'json',
-                          data: {
-                              email: $('#expired-username').val(),
-                              password: $('#expired-password').val(),
-                              two_factor_auth_id: data.number
-                          }
-                      })
-                      .done(function(data){
-                          if (data.response.success === true) {
-                              successfulLogin.bind(self)();
-                          } else {
-                              unsuccessfulLogin.bind(self)(data.response.message);
-                          }
-                      })
-                      .fail(function(){
-                          $("#expired-alert-message").html('Two Factor Authentication Request Failed');
-                      });
-                  },
-                  toastr.error
-              );
-              tfa.setId();
-          } else if (response.response.success === true) {
-              successfulLogin.bind(self)();
-          } else {
-              unsuccessfulLogin.bind(self)(response.response.message);
-          }
-      });
-
-      request.fail(function (jqXHR, textStatus) {
-          $('#expired-alert-message').html('An error occurred, please try again!');
-      });
+    })
+    .catch(function () {
+      if (alertEl) alertEl.textContent = 'An error occurred, please try again!';
+    });
   },
 
   /**
-   * Load the Warning Modal with Handlers
-   * @return void
+   * Format remaining seconds as "MM min SS sec".
+   * @param {number} totalSeconds
+   * @return {string}
+   */
+  formatCountdown: function (totalSeconds) {
+    if (totalSeconds < 0) totalSeconds = 0;
+    var min = Math.floor(totalSeconds / 60);
+    var sec = totalSeconds % 60;
+    return String(min).padStart(2, '0') + ' min ' + String(sec).padStart(2, '0') + ' sec';
+  },
+
+  /**
+   * Show the warning modal with a live countdown.
    */
   loadWarningModal: function () {
-      var self = this;
+    var self = this;
+    if (document.getElementById('session-warning-modal')) return;
+    if (document.getElementById('session-expired-modal')) return;
 
-      // Only continue if the modal is not there.
-      if ($('#session-warning-modal').length > 0) {
-          return;
+    var remaining = self.timeBeforeWarning();
+
+    var body = 'Your session will expire in <span id="session-remaining-time">' +
+      self.formatCountdown(remaining) + '</span> due to inactivity.';
+
+    var footer = '<button id="session-warning-modal-logout-btn" type="button" class="btn btn-danger">Logout <i class="fa-solid fa-sign-out-alt"></i></button>' +
+      '<button id="session-warning-modal-continue-btn" type="button" class="btn btn-success">Stay Logged In</button>';
+
+    var html = self.buildModal({
+      id: 'session-warning-modal',
+      title: 'Your session is about to expire',
+      body: body,
+      footer: footer,
+      staticBackdrop: true
+    });
+    var wrapper = document.createElement('div');
+    wrapper.innerHTML = html;
+    var modalEl = wrapper.firstChild;
+    document.body.appendChild(modalEl);
+
+    new bootstrap.Modal(modalEl, {backdrop: 'static', keyboard: false}).show();
+
+    var countdownEl = document.getElementById('session-remaining-time');
+    self.countdownIntervalID = window.setInterval(function () {
+      remaining--;
+      if (countdownEl) countdownEl.textContent = self.formatCountdown(remaining);
+      if (remaining <= 0) {
+        window.clearInterval(self.countdownIntervalID);
+        self.countdownIntervalID = null;
       }
+    }, 1000);
 
-      var expiredModal = $('#session-expired-modal');
-      var content = null;
-      var countdownDate = null;
-
-      // Don't show the warning modal if expired modal is present
-      if (!(expiredModal !== null && expiredModal !== undefined && expiredModal !== '' && expiredModal.length !== 0)) {
-          content = $.templates('#modal-template').render({
-              id: 'session-warning-modal',
-              title: 'Your session is about to expire',
-              html: 'Your session will expire in <span id="session-remaining-time">3 min 00 sec</span> due to inactivity.',
-              buttons: [
-                  {
-                      button: '<button id="session-warning-modal-logout-btn" type="button" class="btn btn-danger">Logout <i class="fa-solid fa-sign-out-alt"></i></button>'
-                  },
-                  {
-                      button: '<button id="session-warning-modal-continue-btn" type="button" class="btn btn-success">Stay Logged In</button>'
-                  }
-              ],
-              closeButton: false
-          });
-          $('body').append(content);
-          $('#session-warning-modal').modal({
-              "backdrop": "static",
-              "keyboard": false,
-              "show": true
-          });
-
-          countdownDate = moment().add(self.timeBeforeWarning(), 'seconds').toDate();
-
-          $('#session-remaining-time').countdown(countdownDate, function (event) {
-              $(this).html(event.strftime('%M min %S sec'));
-          });
-          $('body').on('click', '#session-warning-modal-logout-btn', function (event) {
-              event.preventDefault();
-              self.logout.bind(self)();
-          });
-          $('body').on('click', '#session-warning-modal-continue-btn', function (event) {
-              event.preventDefault();
-
-              // Destroy the modal
-              self.clearWarningModal.bind(self)();
-
-              // Keep the session alive
-              self.reset.bind(self)(moment().unix());
-          });
-      }
+    document.getElementById('session-warning-modal-logout-btn').addEventListener('click', function (e) {
+      e.preventDefault();
+      self.logout();
+    });
+    document.getElementById('session-warning-modal-continue-btn').addEventListener('click', function (e) {
+      e.preventDefault();
+      self.clearWarningModal();
+      self.reset(Math.floor(Date.now() / 1000));
+    });
   }
 };
 
-$(function() {
-  var sessionMonitorElement = $('body.session-monitor');
-  if (sessionMonitorElement.length !== 0 && sessionMonitorElement !== undefined && sessionMonitorElement !== null && sessionMonitorElement !== '') {
-      var sessionMonitor = new SessionMonitor(sessionMonitorElement);
-  } else if (window.lastAccessTime !== null && window.lastAccessTime !== undefined && window.lastAccessTime !== '') {
-      localStorage.setItem('lastAccessTime', parseInt(window.lastAccessTime));
+document.addEventListener('DOMContentLoaded', function () {
+  var body = document.body;
+  if (body.classList.contains('session-monitor')) {
+    new SessionMonitor(body);
+  } else if (body.dataset.lastAccessTime) {
+    localStorage.setItem('lastAccessTime', parseInt(body.dataset.lastAccessTime, 10));
   }
 });

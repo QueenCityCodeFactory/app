@@ -1,1 +1,12 @@
+// Extra theme colors (merged with Bootstrap's $theme-colors)
+$extra-theme-colors: (
+    "default": $gray-400,
+    "light-orange": $light-orange,
+    "orange": $orange,
+    "purple": $purple,
+    "pink": $pink,
+    "chocolate": $chocolate,
+    "lime": $lime,
+);
+
 $theme-colors: map-merge($theme-colors, $extra-theme-colors);

@@ -7,167 +7,106 @@ A custom application skeleton for creating applications with [CakePHP](https://c
 
 This skeleton builds upon [cakephp/app](https://github.com/cakephp/app) with additional features for streamlined development and deployment.
 
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Framework** | [CakePHP 5.3](https://book.cakephp.org/5/en/index.html) (PHP 8.4+) |
+| **Database** | MySQL 8.4+ |
+| **Web Server** | Nginx with PHP-FPM |
+| **Frontend** | [Bootstrap 5.3](https://getbootstrap.com/docs/5.3/) via [ButterCream](https://github.com/QueenCityCodeFactory/butter-cream) plugin |
+| **Icons** | [Font Awesome 7](https://fontawesome.com/) (CSS + webfonts) |
+| **JS Libraries** | Vanilla JS (no jQuery), TomSelect, Inputmask |
+| **Build Tool** | [Gulp 5](https://gulpjs.com/) (SCSS compilation, JS bundling, font installation) |
+| **Dev VM** | [Multipass](https://multipass.run/) via [Innkeeper](https://git.willettstech.com/tools/innkeeper) |
+| **Provisioning** | Ansible playbooks (`ansible/playbooks/development.yml`) |
+| **Dev Services** | Memcached, Mailpit (email testing), Chrony, SSL (self-signed) |
+
 ## Custom Features & Enhancements
 
 ### ButterCream Plugin
 This skeleton includes [QueenCityCodeFactory/butter-cream](https://github.com/QueenCityCodeFactory/butter-cream), a custom CakePHP plugin providing Bootstrap 5 integration and theme components.
 
 ### Development Environment
-- **Ansible provisioning** - Complete Ansible playbooks and roles for automated development environment setup
-- **Pre-configured services**:
-  - PHP 8.4+ with FPM
-  - Nginx web server with SSL support
-  - MySQL database
-  - Memcached
-  - Mailpit (email testing)
-  - Node.js with NVM
-  - wkhtmltopdf for PDF generation
-  - Chrony for time synchronization
+- **Innkeeper / Ansible provisioning** - Complete playbooks and roles for automated development environment setup
+- **Pre-configured services**: PHP 8.4+ with FPM, Nginx with SSL, MySQL, Memcached, Mailpit, Node.js (NVM), Chrony
 
 ### Frontend Asset Pipeline
-- **Gulp-based build system** - Automated SCSS compilation, JavaScript bundling, and asset optimization
-- **Modern frontend stack**:
-  - Bootstrap 5.3+
-  - Font Awesome 6.5+
-  - jQuery 3.7+
-  - Select2 with Bootstrap 5 theme
-  - Moment.js with timezone support
-  - Inputmask
+- **Gulp 5 build system** - Automated SCSS compilation, JavaScript bundling, and asset optimization
+- **Modern frontend stack**: Bootstrap 5.3+, Font Awesome 7, TomSelect, Inputmask
+- **No jQuery** - All JavaScript is vanilla JS using native DOM APIs and Bootstrap 5 APIs
 
 ### Custom JavaScript Modules
 Pre-built JavaScript utilities in `assets/app/js/`:
-- `ajax-pagination.js` - AJAX-based pagination
-- `app-core.js` - Core application JavaScript
-- `clear-search-form.js` - Search form reset functionality
-- `clipboard.js` - Clipboard operations
-- `format-time.js` - Time formatting utilities
-- `modal-confirm.js` - Confirmation modals
-- `pagination-limit.js` - Pagination limit controls
-- `poptart.js` - Toast notifications
-- `session-monitor.js` - Session timeout monitoring
-- `tmp-file-upload.js` - Temporary file upload handling
+- `ajax-pagination.js` - AJAX pagination, search forms, clear buttons, page-limit selects
+- `app-core.js` - Core initialization (tooltips, popovers, masks, TomSelect, FormatTime)
+- `app-util.js` - Shared utilities (HTML/attribute escaping)
+- `clipboard.js` - Clipboard API wrapper
+- `format-time.js` - UTC-to-local time conversion using `Intl.DateTimeFormat`
+- `modal-confirm.js` - Bootstrap 5 confirmation modals for CakePHP helpers
+- `poptart.js` - Bootstrap 5 toast notification system
+- `session-monitor.js` - Session timeout monitoring with in-page re-login
+- `tmp-file-upload.js` - Temporary file upload with progress bars
 
 ### Custom SCSS Components
 Organized styles in `assets/app/scss/`:
-- Action dropdowns
-- Button groups and custom buttons
-- Callouts and cards
-- Form enhancements
-- Navigation components
-- PDF-specific styles
-- Responsive layout system
+- Action dropdowns, button groups, custom buttons (xs sizes, square buttons)
+- Callouts, cards, form enhancements, navigation
+- Filter drawer, responsive layout, PDF-specific styles
 - Template-specific styles
 
 ### Additional Configuration
 - US States configuration file (`config/states.php`)
 - Enhanced .gitignore for development environment
-- Self-signed certificate generation script
 - Crontab management
 - Development-specific SSL configuration
 
 The framework source code can be found here: [cakephp/cakephp](https://github.com/cakephp/cakephp).
 
-## Installation
+## Quick Start
 
-### Quick Start (Standard CakePHP)
+See [docs/development-environment.md](docs/development-environment.md) for full setup instructions.
 
-1. Download [Composer](https://getcomposer.org/doc/00-intro.md) or update `composer self-update`.
-2. Clone this repository or use it as a template.
-
-### Development Environment Setup (Ansible)
-
-This skeleton includes a complete Ansible provisioning system for setting up a standardized development environment:
-
-1. Ensure you have Ansible installed on your host machine
-2. Configure your inventory in `ansible/inventories/development/`
-3. Run the Ansible playbook:
+1. Clone this repository and configure:
    ```bash
-   ansible-playbook ansible/playbooks/development.yml
+   cp config/app_local.example.php config/app_local.php
    ```
-
-The Ansible setup will configure all necessary services, install dependencies, and prepare your development environment.
+2. Launch the development environment:
+   ```bash
+   innkeeper up
+   ```
+3. Install dependencies and build assets:
+   ```bash
+   innkeeper exec composer install
+   innkeeper exec npm install
+   innkeeper exec gulp
+   ```
 
 ### Frontend Assets
 
-After installation, build the frontend assets:
+Build with Gulp:
 
 ```bash
-npm install
-npm run build
+innkeeper exec gulp            # Build all (lint, compile, fonts, cache-bust)
+innkeeper exec gulp styles     # Rebuild CSS only
+innkeeper exec gulp scripts    # Lint + rebuild JS only
+innkeeper exec gulp fonts      # Reinstall font files
+innkeeper exec gulp watch      # Build then watch for changes
 ```
 
-This will compile SCSS, bundle JavaScript, and copy necessary assets to the webroot.
+## Documentation
 
-### Running the Application
-
-You can now either use your machine's webserver to view the default home page, or start
-up the built-in webserver with:
-
-```bash
-bin/cake server -p 8765
-```
-
-Then visit `http://localhost:8765` to see the welcome page.
-
-## Development
-
-### Building Assets
-
-The project uses Gulp for asset compilation. Available commands:
-
-```bash
-npm run build       # Build all assets (SCSS, JS, fonts)
-```
-
-Gulp tasks handle:
-- SCSS compilation with autoprefixing and minification
-- JavaScript linting, concatenation, and uglification
-- Source map generation
-- Font file installation
-- Asset watching for development
-
-### Cron Jobs
-
-Crontab management is handled through Ansible. Application-specific cron jobs should be placed in `cron.d/` directory.
-
-## Differences from Upstream CakePHP/app
-
-This skeleton maintains compatibility with upstream CakePHP/app while adding:
-
-1. **Ansible Infrastructure** - Complete development environment automation
-2. **Frontend Tooling** - Gulp build system with modern JavaScript/CSS pipeline
-3. **ButterCream Plugin** - Bootstrap 5 integration and UI components
-4. **Custom Components** - Reusable JavaScript modules and SCSS components
-5. **Enhanced Configuration** - Additional config files for common use cases (states, etc.)
-6. **Development Tools** - SSL certificate generation, improved .gitignore
-7. **Service Integration** - Pre-configured Mailpit, Memcached, wkhtmltopdf
-
-To update from upstream:
-```bash
-git fetch upstream 5.x
-git merge upstream/5.x
-```
-
-Review and resolve any conflicts, particularly in:
-- `composer.json` (dependencies)
-- `config/` files (configuration)
-- `templates/layout/default.php` (layout customizations)
+- [docs/development-environment.md](docs/development-environment.md) - Local setup walkthrough
+- [docs/database.md](docs/database.md) - Database configuration (Docker / VM MySQL)
+- [docs/frontend-assets.md](docs/frontend-assets.md) - Gulp pipeline, SCSS, JS, vendor libraries
+- [docs/innkeeper.md](docs/innkeeper.md) - Innkeeper CLI reference
+- [docs/migrations.md](docs/migrations.md) - Migration creation, consolidation, cleanup
 
 ## Configuration
 
 Read and edit the environment specific `config/app_local.php` and set up the
 `'Datasources'` and any other configuration relevant for your application.
 Other environment agnostic settings can be changed in `config/app.php`.
-
-### Additional Configuration Files
-
-- `config/states.php` - US state listings for dropdown/select menus
-- `development.openssl.cnf` - OpenSSL configuration for development SSL certificates
-- `ansible.cfg` - Ansible configuration for development provisioning
-
-## Layout
-
-This skeleton uses [Bootstrap 5](https://getbootstrap.com/) instead of the default Milligram framework. Bootstrap is integrated via the ButterCream plugin and custom SCSS components in `assets/app/scss/`.
 
 The layout includes:
 - Responsive navigation

@@ -19,6 +19,7 @@ namespace App\Controller;
 use ButterCream\Controller\Controller;
 use Cake\Core\Configure;
 use Cake\Event\EventInterface;
+use Cake\Http\Response;
 
 /**
  * Application Controller
@@ -43,8 +44,6 @@ class AppController extends Controller
     {
         parent::initialize();
 
-        $this->loadComponent('Flash');
-
         /*
          * Enable the following component for recommended CakePHP form protection settings.
          * see https://book.cakephp.org/5/en/controllers/components/form-protection.html
@@ -52,20 +51,25 @@ class AppController extends Controller
         //$this->loadComponent('FormProtection');
         //$this->loadComponent('Authentication.Authentication');
         //$this->loadComponent('Authorization.Authorization');
+
+        // Suggested components — available after installing the corresponding plugin:
+        // $this->loadComponent('Muffin/Footprint.Footprint'); // Passes Auth user to Table callbacks
     }
 
     /**
      * Controller Before Filter Callback
      *
      * @param \Cake\Event\EventInterface<$this> $event The Event Object
-     * @return void
+     * @return \Cake\Http\Response|void
      */
-    public function beforeFilter(EventInterface $event): void
+    public function beforeFilter(EventInterface $event): ?Response
     {
         parent::beforeFilter($event);
 
         if ($this->request?->is('ajax')) {
             Configure::write('debug', false);
         }
+
+        return null;
     }
 }
