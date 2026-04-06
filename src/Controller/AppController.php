@@ -60,13 +60,13 @@ class AppController extends Controller
      * Controller Before Filter Callback
      *
      * @param \Cake\Event\EventInterface<$this> $event The Event Object
-     * @return \Cake\Http\Response|void
+     * @return \Cake\Http\Response|null
      */
     public function beforeFilter(EventInterface $event): ?Response
     {
         parent::beforeFilter($event);
 
-        if ($this->request?->is('ajax')) {
+        if ($this->request->is('ajax')) {
             Configure::write('debug', false);
         }
 

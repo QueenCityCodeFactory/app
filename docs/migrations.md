@@ -34,6 +34,33 @@ Edit the generated file in `config/Migrations/`, then run it:
 innkeeper exec bin/cake migrations migrate
 ```
 
+### Migration Base Class
+
+All migrations **must** extend `Migrations\BaseMigration` (not the old `Phinx\Migration\AbstractMigration` or `Migrations\AbstractMigration`). This is the CakePHP Migrations 5.x base class.
+
+```php
+<?php
+declare(strict_types=1);
+
+use Migrations\BaseMigration;
+
+class CreateExamples extends BaseMigration
+{
+    public function change(): void
+    {
+        $this->table('examples')
+            ->addColumn('name', 'string', ['limit' => 100, 'null' => false])
+            ->addColumn('description', 'text', ['null' => true, 'default' => null])
+            ->addColumn('is_active', 'boolean', ['default' => true, 'null' => false])
+            ->addColumn('created', 'datetime', ['null' => true, 'default' => null])
+            ->addColumn('modified', 'datetime', ['null' => true, 'default' => null])
+            ->create();
+    }
+}
+```
+
+See `config/Migrations/20260405120000_CreateExampleTables.php` for a full working example.
+
 ### Naming Conventions
 
 Migration class names should clearly describe the change:

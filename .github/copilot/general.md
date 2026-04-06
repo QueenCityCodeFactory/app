@@ -80,6 +80,7 @@ class ExamplesTable extends Table
 - **`created` / `modified`** timestamps on all tables (use Timestamp behavior)
 - **Nullable columns** require explicit `'null' => true, 'default' => null` in migrations
 - **Snake_case** for table names and column names
+- **Migrations must extend `Migrations\BaseMigration`** — never `AbstractMigration` (see [migrations guide](migrations.md))
 
 ## Development Workflows
 

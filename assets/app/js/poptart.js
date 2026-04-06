@@ -35,7 +35,7 @@ var PopTart = {
   },
 
   notify: function (options) {
-    if (!options) return;
+    if (!options || (!options.message && !options.title)) return;
     var container = this.getContainer();
     var toast = document.createElement('div');
     toast.className = 'toast text-white';

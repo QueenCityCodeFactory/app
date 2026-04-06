@@ -73,12 +73,40 @@ mysql -h 127.0.0.1 -P <PORT> -u <USER> -p<PASS> <DB> \
 
 Read credentials from `config/app_local.php` — see [innkeeper.md](innkeeper.md#database-connection-patterns).
 
+## Migration Base Class — CRITICAL
+
+All migrations **must** extend `Migrations\BaseMigration`. The old `Phinx\Migration\AbstractMigration` and `Migrations\AbstractMigration` classes are **deprecated / incorrect** for CakePHP Migrations 5.x.
+
+```php
+<?php
+declare(strict_types=1);
+
+use Migrations\BaseMigration;
+
+class CreateExamples extends BaseMigration
+{
+    public function change(): void
+    {
+        $this->table('examples')
+            ->addColumn('name', 'string', ['limit' => 100, 'null' => false])
+            ->addColumn('description', 'text', ['null' => true, 'default' => null])
+            ->addColumn('is_active', 'boolean', ['default' => true, 'null' => false])
+            ->addColumn('created', 'datetime', ['null' => true, 'default' => null])
+            ->addColumn('modified', 'datetime', ['null' => true, 'default' => null])
+            ->create();
+    }
+}
+```
+
+A full working example is in `config/Migrations/20260405120000_CreateExampleTables.php`.
+
 ## AI / Copilot Rules Summary
 
-1. **One migration per logical feature** during development. Consolidate before committing.
-2. **Ask before creating a new migration** if one already exists for the same feature.
-3. **Ask the user before rolling back** — rollbacks alter the database.
-4. **Always roll back before deleting** a migration file.
-5. **Roll back → edit → re-run** is the preferred workflow for uncommitted migrations.
-6. **Never edit a migration that has been committed or deployed.**
-7. **Name migrations descriptively** (e.g. `CreateUserAccounts`, not `UpdateTables3`).
+1. **Always use `Migrations\BaseMigration`** — never `AbstractMigration`.
+2. **One migration per logical feature** during development. Consolidate before committing.
+3. **Ask before creating a new migration** if one already exists for the same feature.
+4. **Ask the user before rolling back** — rollbacks alter the database.
+5. **Always roll back before deleting** a migration file.
+6. **Roll back → edit → re-run** is the preferred workflow for uncommitted migrations.
+7. **Never edit a migration that has been committed or deployed.**
+8. **Name migrations descriptively** (e.g. `CreateUserAccounts`, not `UpdateTables3`).

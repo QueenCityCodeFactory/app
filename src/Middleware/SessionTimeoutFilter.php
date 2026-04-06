@@ -58,7 +58,6 @@ class SessionTimeoutFilter implements MiddlewareInterface
                     $session->write('SessionTimeoutFilter.lastAccess', time());
                 }
             }
-
         }
 
         // Always refresh CakePHP's internal Config.time so that

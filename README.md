@@ -101,6 +101,7 @@ innkeeper exec gulp watch      # Build then watch for changes
 - [docs/frontend-assets.md](docs/frontend-assets.md) - Gulp pipeline, SCSS, JS, vendor libraries
 - [docs/innkeeper.md](docs/innkeeper.md) - Innkeeper CLI reference
 - [docs/migrations.md](docs/migrations.md) - Migration creation, consolidation, cleanup
+- [CHANGELOG.md](CHANGELOG.md) - Version history and notable changes
 
 ## Configuration
 
@@ -148,7 +149,7 @@ updates should be done carefully:
 
 - **PHP**: 8.4 or higher
 - **CakePHP**: 5.3+
-- **Node.js**: 14+ (for asset compilation)
+- **Node.js**: 20+ (managed via NVM in the VM)
 - **Composer**: Latest version
 
 ## Credits
