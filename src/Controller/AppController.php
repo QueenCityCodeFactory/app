@@ -66,7 +66,7 @@ class AppController extends Controller
     {
         parent::beforeFilter($event);
 
-        if ($this->request->is('ajax')) {
+        if ($this->request?->is('ajax')) {
             Configure::write('debug', false);
         }
 
