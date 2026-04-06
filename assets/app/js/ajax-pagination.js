@@ -135,7 +135,23 @@ var AjaxPagination = {
       var form = btn.closest('form');
       if (!form) return;
 
-      // Reset all fields except those marked with data-keep-value
+      // AJAX form inside a paginated container: reload the container's
+      // original data-url directly. This resets filters while preserving
+      // FK/scope params without depending on form-field options being loaded.
+      if (form.classList.contains('ajax-search-form')) {
+        var ajaxContainer = form.closest('.ajax-pagination');
+        if (ajaxContainer && ajaxContainer.dataset.url) {
+          var container = form.dataset.update
+            ? document.querySelector(form.dataset.update)
+            : ajaxContainer;
+          if (container) {
+            AppAjax.fetchAndInject(ajaxContainer.dataset.url, container);
+            return;
+          }
+        }
+      }
+
+      // Non-AJAX fallback: clear fields and submit normally
       form.querySelectorAll('input:not([data-keep-value="1"])').forEach(function (el) {
         if (el.type === 'checkbox' || el.type === 'radio') {
           el.checked = false;
@@ -151,12 +167,7 @@ var AjaxPagination = {
         }
       });
 
-      // Re-submit: AJAX if applicable, otherwise standard submit
-      if (form.classList.contains('ajax-search-form')) {
-        form.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
-      } else {
-        form.submit();
-      }
+      form.submit();
     });
   }
 };

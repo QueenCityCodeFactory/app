@@ -84,8 +84,8 @@ return [
      * - Trick grab current timestamp from http://www.currenttimestamp.com/
      */
     'CacheBuster' => [
-        'jsCB' => '1775429698',
-        'cssCB' => '1775429698',
+        'jsCB' => '1775433937',
+        'cssCB' => '1775433937',
     ],
 
     /*
