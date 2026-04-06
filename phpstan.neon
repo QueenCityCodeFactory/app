@@ -6,4 +6,6 @@ parameters:
 	paths:
 		- src/
 	ignoreErrors:
-		- identifier: nullsafe.neverNull
+		-
+			identifier: nullsafe.neverNull
+			reportUnmatched: false
