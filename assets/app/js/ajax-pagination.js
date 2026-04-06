@@ -141,9 +141,7 @@ var AjaxPagination = {
       if (form.classList.contains('ajax-search-form')) {
         var ajaxContainer = form.closest('.ajax-pagination');
         if (ajaxContainer && ajaxContainer.dataset.url) {
-          var container = form.dataset.update
-            ? document.querySelector(form.dataset.update)
-            : ajaxContainer;
+          var container = form.dataset.update ? document.querySelector(form.dataset.update) : ajaxContainer;
           if (container) {
             AppAjax.fetchAndInject(ajaxContainer.dataset.url, container);
             return;

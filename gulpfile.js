@@ -64,7 +64,7 @@ function buildStyle(name, files) {
 
     return gulp.src(files)
         .pipe(expectFile.real({ verbose: true }, normalized))
-        .pipe(compileSass().on('error', compileSass.logError))
+        .pipe(compileSass({silenceDeprecations: ['legacy-js-api', 'import', 'if-function', 'global-builtin', 'color-functions']}).on('error', compileSass.logError))
         .pipe(concat(name + '.css'))
         .pipe(replace('../webfonts/', '../font/'))
         .pipe(postcss([autoprefixer()]))

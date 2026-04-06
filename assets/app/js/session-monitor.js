@@ -265,7 +265,8 @@ SessionMonitor.prototype = {
     if (!el) return;
     var instance = bootstrap.Modal.getInstance(el);
     if (instance) instance.dispose();
-    document.querySelector('.main-wrapper')?.classList.remove('blur');
+    var wrapper = document.querySelector('.main-wrapper');
+    if (wrapper) wrapper.classList.remove('blur');
     // Remove the backdrop manually since dispose() doesn't always clean it up
     var backdrop = document.querySelector('.modal-backdrop');
     if (backdrop) backdrop.remove();
@@ -314,7 +315,8 @@ SessionMonitor.prototype = {
     new bootstrap.Modal(modalEl, {backdrop: 'static', keyboard: false}).show();
 
     modalEl.addEventListener('shown.bs.modal', function () {
-      document.querySelector('.main-wrapper')?.classList.add('blur');
+      var wrapper = document.querySelector('.main-wrapper');
+      if (wrapper) wrapper.classList.add('blur');
     });
 
     document.getElementById('session-expired-modal-logout-btn').addEventListener('click', function (e) {
