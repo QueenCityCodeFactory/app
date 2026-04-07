@@ -41,12 +41,24 @@ Pre-built JavaScript utilities in `assets/app/js/`:
 - `ajax-pagination.js` - AJAX pagination, search forms, clear buttons, page-limit selects
 - `app-core.js` - Core initialization (tooltips, popovers, masks, TomSelect, FormatTime)
 - `app-util.js` - Shared utilities (HTML/attribute escaping)
+- `bulk-select.js` - Table row select-all / bulk action checkboxes
 - `clipboard.js` - Clipboard API wrapper
+- `dark-mode.js` - Bootstrap 5.3 light/dark/auto theme toggle
+- `dependent-selects.js` - Cascading AJAX-powered dependent dropdowns
 - `format-time.js` - UTC-to-local time conversion using `Intl.DateTimeFormat`
 - `modal-confirm.js` - Bootstrap 5 confirmation modals for CakePHP helpers
 - `poptart.js` - Bootstrap 5 toast notification system
 - `session-monitor.js` - Session timeout monitoring with in-page re-login
 - `tmp-file-upload.js` - Temporary file upload with progress bars
+
+### Enums (`src/Enum/`)
+PHP 8.4 native backed enums with a shared `LabeledEnum` interface and `HasLabeledOptions` trait:
+- `Priority` - low, medium, high, critical (with Bootstrap badge colors)
+- `Status` - draft, active, inactive, archived (with Bootstrap badge colors)
+- `UsState` - All 50 US states + DC
+- `CanadianProvince` - All 13 Canadian provinces and territories
+
+Enums provide `options()` for Form select helpers, `values()` for `inList()` validation, and `label()`/`color()` for display.
 
 ### Custom SCSS Components
 Organized styles in `assets/app/scss/`:
@@ -56,7 +68,6 @@ Organized styles in `assets/app/scss/`:
 - Template-specific styles
 
 ### Additional Configuration
-- US States configuration file (`config/states.php`)
 - Enhanced .gitignore for development environment
 - Crontab management
 - Development-specific SSL configuration

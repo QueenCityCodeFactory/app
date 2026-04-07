@@ -61,10 +61,13 @@ node_modules/ fonts        →  webroot/font/
 
 | Module | Purpose |
 |--------|---------|
+| `ajax-pagination.js` | AJAX-powered pagination, search forms, and page-limit selects |
 | `app-core.js` | Core initialization (tooltips, popovers, masks, TomSelect) |
 | `app-util.js` | Shared utility functions (escapeHtml, escapeAttr) |
-| `ajax-pagination.js` | AJAX-powered pagination and search |
+| `bulk-select.js` | Table row select-all / bulk action checkboxes |
 | `clipboard.js` | Clipboard copy functionality |
+| `dark-mode.js` | Bootstrap 5.3 light/dark/auto theme toggle |
+| `dependent-selects.js` | Cascading AJAX-powered dependent dropdowns |
 | `format-time.js` | UTC→local time formatting via Intl.DateTimeFormat |
 | `modal-confirm.js` | Bootstrap 5 confirmation modal dialogs |
 | `poptart.js` | Toast notifications |

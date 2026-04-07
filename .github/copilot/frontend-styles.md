@@ -66,7 +66,7 @@ Before adding custom CSS or inline styles, check `assets/app/scss/helpers.scss` 
 |---------|---------|-------|
 | Bootstrap 5.3 | Tooltip, Popover, Modal, Toast | Native JS API, no jQuery bridge |
 | Popper.js 2 | Bootstrap positioning dependency | |
-| TomSelect | Enhanced select dropdowns | Use `.enhanced-select` class; BS5 theme CSS included |
+| TomSelect | Enhanced select dropdowns | Selector: `select.enhanced-select`; BS5 theme CSS included |
 | Inputmask | Input masking (phone, date, etc.) | Vanilla mode: `Inputmask().mask(el)` |
 | Font Awesome 7 | Icons | CSS + webfonts approach (not JS + SVG) |
 
@@ -75,9 +75,19 @@ Before adding custom CSS or inline styles, check `assets/app/scss/helpers.scss` 
 | Object | File | Purpose |
 |--------|------|---------|
 | `AppCore` | `app-core.js` | Tooltips, popovers, masks, enhanced selects initialization |
-| `AjaxBind` | `ajax-pagination.js` | Re-init UI after AJAX content load |
-| `AjaxPagination` | `ajax-pagination.js` | AJAX pagination and search |
+| `AppAjax` | `ajax-pagination.js` | `fetchAndInject()` — AJAX fetch + DOM inject + re-init |
+| `AjaxPagination` | `ajax-pagination.js` | AJAX pagination, search forms, limit selects |
+| `BulkSelect` | `bulk-select.js` | Table row select-all / bulk action checkboxes |
+| `DarkMode` | `dark-mode.js` | Bootstrap 5.3 light/dark/auto theme toggle |
+| `DependentSelects` | `dependent-selects.js` | Cascading AJAX-powered dependent dropdowns |
 | `ModalConfirm` | `modal-confirm.js` | Confirmation modals for postLink/link helpers |
 | `PopTart` | `poptart.js` | Toast notifications (`PopTart.success()`, `.error()`, etc.) |
 | `FormatTime` | `format-time.js` | UTC → local time conversion |
 | `SessionMonitor` | `session-monitor.js` | Session timeout warnings and re-login |
+
+### TomSelect Initialization Notes
+
+- The selector is `select.enhanced-select:not(.tomselected)` — the `select` tag qualifier is **required** because TomSelect copies the original element's classes (including `enhanced-select`) onto its wrapper `<div>`. Without the `select` qualifier, re-running `AppCore.init()` after AJAX injection would match those wrapper divs and crash.
+- Multi-select elements automatically get the `remove_button` plugin.
+- Each `new TomSelect()` call is wrapped in try/catch so a single bad element doesn't break initialization of other selects.
+- `AppCore.init()` in the AJAX `fetchAndInject` flow is wrapped in try/catch — init errors log to `console.error` instead of being shown as PopTart error toasts.

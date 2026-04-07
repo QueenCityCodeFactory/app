@@ -19,6 +19,7 @@ Detailed Copilot guidance lives under `.github/copilot/`. Start with the documen
 | **Assets** | Edit `assets/app/`, run `innkeeper exec gulp`, commit compiled `webroot/css`, `webroot/js`, `webroot/font` |
 | **Database queries** | Read credentials from `config/app_local.php`; prefer macOS `mysql` CLI against `127.0.0.1`; fallback via `innkeeper exec` |
 | **View templates** | Use ButterCream/Bootstrap 5 helpers from the `butter-cream` plugin |
+| **Enums** | Use PHP 8.4 native backed enums in `src/Enum/`; implement `LabeledEnum` + `HasLabeledOptions` trait; use `Enum::options()` for form selects, `Enum::values()` for `inList()` validation |
 | **Dates** | CakePHP 5 uses immutable date objects — use `\Cake\I18n\Date` for date-only, `\Cake\I18n\DateTime` for datetime |
 
 ---

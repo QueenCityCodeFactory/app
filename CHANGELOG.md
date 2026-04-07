@@ -13,6 +13,13 @@ All notable changes to the Willetts Technology CakePHP Application Skeleton will
 - Cron template system for managing scheduled tasks
 - AI/Copilot coding instructions (`.github/copilot/`)
 - Developer documentation (`docs/`) for database, frontend assets, innkeeper, and migrations
+- **Enum system** — PHP 8.4 native backed enums with `LabeledEnum` interface and `HasLabeledOptions` trait (`src/Enum/`)
+  - `Priority` enum (low, medium, high, critical) with `color()` for Bootstrap badges
+  - `Status` enum (draft, active, inactive, archived) with `color()` for Bootstrap badges
+  - `UsState` enum (all 50 states + DC)
+  - `CanadianProvince` enum (all 13 provinces/territories)
+- New JS modules: `bulk-select.js` (table row select-all), `dark-mode.js` (Bootstrap 5.3 theme toggle), `dependent-selects.js` (cascading AJAX dropdowns)
+- `.jshintrc` configuration for JS linting
 
 ### Changed
 - Modernized provisioning to use Innkeeper (Multipass) instead of Vagrant
@@ -26,6 +33,9 @@ All notable changes to the Willetts Technology CakePHP Application Skeleton will
 - Dropped PHP 8.2 from CI matrix
 - Updated README with full tech stack documentation
 - Customized `app_name` configuration
+- TomSelect `enhancedSelects()` now uses `select.enhanced-select` selector to avoid re-initializing TomSelect wrapper `<div>`s that inherit the `enhanced-select` class
+- TomSelect init supports `remove_button` plugin for multi-select elements
+- Silenced Sass deprecation warnings in Gulp build (`legacy-js-api`, `import`, `if-function`, `global-builtin`, `color-functions`)
 
 ### Fixed
 - Static return type declarations
@@ -33,12 +43,16 @@ All notable changes to the Willetts Technology CakePHP Application Skeleton will
 - Use statement corrections
 - Test fixes
 - Deprecation warnings
+- **TomSelect `trim` error** — AJAX-loaded content re-running `AppCore.init()` would match TomSelect wrapper `<div>` elements (which inherit the `enhanced-select` class from the original `<select>`), causing `init_textbox` to call `.trim()` on `undefined` (`div.value`). Fixed by scoping the selector to `select.enhanced-select:not(.tomselected)`.
+- **AJAX init errors shown as PopTart toasts** — JavaScript errors thrown during `AppCore.init()` after AJAX content injection were caught by the Promise `.catch()` and displayed as error toasts instead of appearing in the console. Wrapped `AppCore.init()` in try/catch inside `fetchAndInject` so init errors log to `console.error` with full stack traces.
+- `session-monitor.js` replaced optional chaining (`?.`) with explicit null checks for broader browser compatibility
 
 ### Removed
 - Legacy code and unused assets
 - Old Vagrant provisioning configuration
 - Deprecated cron files (replaced by cron template system)
 - Legacy CSS files (`fonts.css`, `home.css`, `milligram.min.css`, `normalize.min.css`)
+- `config/states.php` — replaced by `src/Enum/UsState.php`
 
 ### Security
 - Moved Host Header Injection check to dedicated middleware

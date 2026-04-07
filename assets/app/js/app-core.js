@@ -68,10 +68,20 @@ var AppCore = {
    * Initialize TomSelect on .enhanced-select elements
    */
   enhancedSelects: function () {
-    document.querySelectorAll('.enhanced-select:not(.tomselected)').forEach(function (el) {
-      new TomSelect(el, {
+    document.querySelectorAll('select.enhanced-select:not(.tomselected)').forEach(function (el) {
+      var config = {
         allowEmptyOption: true
-      });
+      };
+
+      if (el.multiple) {
+        config.plugins = ['remove_button'];
+      }
+
+      try {
+        new TomSelect(el, config);
+      } catch (e) {
+        console.error('TomSelect init failed:', e, el);
+      }
     });
   }
 };

@@ -37,6 +37,7 @@ This is a standard CakePHP 5 application (not plugin-based). Application code li
 - `src/Model/Table/` — ORM table classes
 - `src/Model/Entity/` — entity classes
 - `src/Model/Behavior/` — reusable model behaviors
+- `src/Enum/` — PHP 8.4 native backed enums
 - `src/View/` — view classes and helpers
 - `src/Middleware/` — HTTP middleware
 - `templates/` — view templates (.php files)
@@ -81,6 +82,42 @@ class ExamplesTable extends Table
 - **Nullable columns** require explicit `'null' => true, 'default' => null` in migrations
 - **Snake_case** for table names and column names
 - **Migrations must extend `Migrations\BaseMigration`** — never `AbstractMigration` (see [migrations guide](migrations.md))
+
+### Enums
+Use PHP 8.4 native backed enums in `src/Enum/`. All enums should implement `LabeledEnum` and use the `HasLabeledOptions` trait:
+
+```php
+use App\Enum\LabeledEnum;
+use App\Enum\HasLabeledOptions;
+
+enum Priority: string implements LabeledEnum
+{
+    use HasLabeledOptions;
+
+    case Low = 'low';
+    case Medium = 'medium';
+    case High = 'high';
+    case Critical = 'critical';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Low => 'Low',
+            self::Medium => 'Medium',
+            self::High => 'High',
+            self::Critical => 'Critical',
+        };
+    }
+}
+```
+
+**Usage patterns:**
+- **Form selects:** `$this->Form->control('priority', ['options' => Priority::options()])` — returns `[value => label]`
+- **Validation:** `->inList(Priority::values())` — returns flat array of values
+- **Display:** `Priority::from($value)->label()` — human-readable label
+- **Badge colors:** Enums like `Priority` and `Status` include a `color()` method returning Bootstrap color names
+
+**Existing enums:** `Priority`, `Status`, `UsState`, `CanadianProvince`
 
 ## Development Workflows
 

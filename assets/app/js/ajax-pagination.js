@@ -29,7 +29,11 @@ var AppAjax = {
       })
       .then(function (html) {
         container.innerHTML = html;
-        AppCore.init();
+        try {
+          AppCore.init();
+        } catch (e) {
+          console.error('AppCore.init() error after AJAX injection:', e);
+        }
       })
       .catch(function (err) {
         PopTart.error(errorMessage || err.message);
