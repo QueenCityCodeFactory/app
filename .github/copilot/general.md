@@ -84,15 +84,15 @@ class ExamplesTable extends Table
 - **Migrations must extend `Migrations\BaseMigration`** — never `AbstractMigration` (see [migrations guide](migrations.md))
 
 ### Enums
-Use PHP 8.4 native backed enums in `src/Enum/`. All enums should implement `LabeledEnum` and use the `HasLabeledOptions` trait:
+Use PHP 8.4 native backed enums in `src/Enum/`. All enums should implement `LabeledEnum` and use the `HasLabeledOptionsTrait` trait:
 
 ```php
 use App\Enum\LabeledEnum;
-use App\Enum\HasLabeledOptions;
+use App\Enum\HasLabeledOptionsTrait;
 
 enum Priority: string implements LabeledEnum
 {
-    use HasLabeledOptions;
+    use HasLabeledOptionsTrait;
 
     case Low = 'low';
     case Medium = 'medium';

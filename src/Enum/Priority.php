@@ -8,13 +8,16 @@ namespace App\Enum;
  */
 enum Priority: string implements LabeledEnum
 {
-    use HasLabeledOptions;
+    use HasLabeledOptionsTrait;
 
     case Low = 'low';
     case Medium = 'medium';
     case High = 'high';
     case Critical = 'critical';
 
+    /**
+     * @inheritDoc
+     */
     public function label(): string
     {
         return match ($this) {

@@ -8,13 +8,16 @@ namespace App\Enum;
  */
 enum Status: string implements LabeledEnum
 {
-    use HasLabeledOptions;
+    use HasLabeledOptionsTrait;
 
     case Draft = 'draft';
     case Active = 'active';
     case Inactive = 'inactive';
     case Archived = 'archived';
 
+    /**
+     * @inheritDoc
+     */
     public function label(): string
     {
         return match ($this) {

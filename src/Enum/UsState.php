@@ -11,7 +11,7 @@ namespace App\Enum;
  */
 enum UsState: string implements LabeledEnum
 {
-    use HasLabeledOptions;
+    use HasLabeledOptionsTrait;
 
     case AL = 'AL';
     case AK = 'AK';
@@ -65,6 +65,9 @@ enum UsState: string implements LabeledEnum
     case WI = 'WI';
     case WY = 'WY';
 
+    /**
+     * @inheritDoc
+     */
     public function label(): string
     {
         return match ($this) {

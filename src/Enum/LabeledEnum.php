@@ -7,7 +7,7 @@ namespace App\Enum;
  * Contract for backed enums that carry a human-readable label.
  *
  * Implement on any `string`- or `int`-backed enum and pair
- * with the `HasLabeledOptions` trait for a full API.
+ * with the `HasLabeledOptionsTrait` trait for a full API.
  */
 interface LabeledEnum
 {

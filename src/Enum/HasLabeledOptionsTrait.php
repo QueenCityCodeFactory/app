@@ -13,7 +13,7 @@ namespace App\Enum;
  * ```
  * enum Priority: string implements LabeledEnum
  * {
- *     use HasLabeledOptions;
+ *     use HasLabeledOptionsTrait;
  *     case Low = 'low';
  *     // ...
  *     public function label(): string { ... }
@@ -24,7 +24,7 @@ namespace App\Enum;
  * Priority::from('low')->label(); // 'Low'
  * ```
  */
-trait HasLabeledOptions
+trait HasLabeledOptionsTrait
 {
     /**
      * Value => Label map suitable for `Form->control('field', ['options' => ...])`.
@@ -58,6 +58,6 @@ trait HasLabeledOptions
      */
     public static function labels(): array
     {
-        return array_map(fn (self $case) => $case->label(), self::cases());
+        return array_map(fn(self $case) => $case->label(), self::cases());
     }
 }

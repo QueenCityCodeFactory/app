@@ -13,7 +13,7 @@ All notable changes to the Willetts Technology CakePHP Application Skeleton will
 - Cron template system for managing scheduled tasks
 - AI/Copilot coding instructions (`.github/copilot/`)
 - Developer documentation (`docs/`) for database, frontend assets, innkeeper, and migrations
-- **Enum system** — PHP 8.4 native backed enums with `LabeledEnum` interface and `HasLabeledOptions` trait (`src/Enum/`)
+- **Enum system** — PHP 8.4 native backed enums with `LabeledEnum` interface and `HasLabeledOptionsTrait` trait (`src/Enum/`)
   - `Priority` enum (low, medium, high, critical) with `color()` for Bootstrap badges
   - `Status` enum (draft, active, inactive, archived) with `color()` for Bootstrap badges
   - `UsState` enum (all 50 states + DC)

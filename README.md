@@ -52,7 +52,7 @@ Pre-built JavaScript utilities in `assets/app/js/`:
 - `tmp-file-upload.js` - Temporary file upload with progress bars
 
 ### Enums (`src/Enum/`)
-PHP 8.4 native backed enums with a shared `LabeledEnum` interface and `HasLabeledOptions` trait:
+PHP 8.4 native backed enums with a shared `LabeledEnum` interface and `HasLabeledOptionsTrait` trait:
 - `Priority` - low, medium, high, critical (with Bootstrap badge colors)
 - `Status` - draft, active, inactive, archived (with Bootstrap badge colors)
 - `UsState` - All 50 US states + DC

@@ -11,7 +11,7 @@ namespace App\Enum;
  */
 enum CanadianProvince: string implements LabeledEnum
 {
-    use HasLabeledOptions;
+    use HasLabeledOptionsTrait;
 
     case AB = 'AB';
     case BC = 'BC';
@@ -27,6 +27,9 @@ enum CanadianProvince: string implements LabeledEnum
     case SK = 'SK';
     case YT = 'YT';
 
+    /**
+     * @inheritDoc
+     */
     public function label(): string
     {
         return match ($this) {
