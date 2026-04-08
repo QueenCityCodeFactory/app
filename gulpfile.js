@@ -9,7 +9,6 @@ const rename = require('gulp-rename');
 const replace = require('gulp-replace');
 const gulpSass = require('gulp-sass');
 const sass = require('sass');
-const stylelint = require('gulp-stylelint-esm');
 const terser = require('gulp-terser');
 const mergeStream = require('merge-stream');
 const path = require('path');
@@ -113,17 +112,24 @@ function lintScripts(done) {
     return mergeStream(streams);
 }
 
-function lintStyles(done) {
+async function lintStyles() {
     const scssFiles = Object.values(styles)
         .flat()
         .filter(f => f.endsWith('.scss'));
-    if (scssFiles.length === 0) return done();
+    if (scssFiles.length === 0) return;
 
-    return gulp.src(scssFiles)
-        .pipe(stylelint.default({
-            reporters: [{ formatter: 'string', console: true }],
-            failAfterError: true
-        }));
+    const stylelint = await import('stylelint');
+    const result = await stylelint.default.lint({
+        files: scssFiles,
+        formatter: 'string',
+    });
+
+    if (result.output) {
+        process.stderr.write(result.output);
+    }
+    if (result.errored) {
+        throw new Error('stylelint found errors');
+    }
 }
 
 function cacheBuster(done) {
