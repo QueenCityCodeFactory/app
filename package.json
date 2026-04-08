@@ -7,7 +7,10 @@
     "test": "tests"
   },
   "scripts": {
-    "build": "node ./node_modules/gulp/bin/gulp.js"
+    "build": "node ./node_modules/gulp/bin/gulp.js",
+    "lint": "node ./node_modules/gulp/bin/gulp.js lint",
+    "lint:js": "jshint assets/app/js/",
+    "lint:scss": "stylelint 'assets/app/scss/**/*.scss'"
   },
   "author": "Willetts Technology, Inc.",
   "license": "UNLICENSED",
@@ -29,10 +32,13 @@
     "gulp-rename": "^2.0.0",
     "gulp-replace": "^1.1.4",
     "gulp-sass": "^5.1.0",
+    "gulp-stylelint-esm": "^3.0.0",
     "gulp-terser": "^2.1.0",
     "jshint": "^2.13.6",
     "jshint-stylish": "^2.2.1",
     "merge-stream": "^2.0.0",
-    "sass": "^1.83.0"
+    "sass": "^1.83.0",
+    "stylelint": "^17.6.0",
+    "stylelint-config-standard-scss": "^17.0.0"
   }
 }

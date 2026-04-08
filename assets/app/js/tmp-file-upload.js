@@ -1,3 +1,4 @@
+/* global AppUtil, AppCore, PopTart */
 /**
  * TmpFileUpload - Handles temporary file uploads with progress indication.
  * Uses XMLHttpRequest for upload progress events. Bootstrap 5 card markup.
@@ -5,52 +6,50 @@
  *
  * @param {object} options Configuration overrides
  */
-var TmpFileUpload = function (options) {
-  this.fileIndex = 0;
-  this.xhr = [];
-  this.onComplete = null;
-  this.uploadTrigger = '#file-upload-trigger';
-  this.fileInput = '#file-upload';
-  this.fieldName = 'files';
-  this.uploadProgressContainer = '#upload-progress';
-  this.individualFileProgressContainer = '#file-upload-progress-';
-  this.csrfToken = null;
-  this.init(options);
-};
-
-TmpFileUpload.prototype = {
-
-  init: function (options) {
-    var self = this;
+class TmpFileUpload {
+  constructor(options) {
+    this.fileIndex = 0;
+    this.xhr = [];
+    this.onComplete = null;
+    this.uploadTrigger = '#file-upload-trigger';
+    this.fileInput = '#file-upload';
+    this.fieldName = 'files';
+    this.uploadProgressContainer = '#upload-progress';
+    this.individualFileProgressContainer = '#file-upload-progress-';
+    this.csrfToken = null;
 
     if (options && typeof options === 'object') {
-      Object.keys(options).forEach(function (key) {
-        self[key] = options[key];
+      Object.keys(options).forEach((key) => {
+        this[key] = options[key];
       });
     }
 
-    document.body.addEventListener('change', function (event) {
-      if (event.target.closest(self.fileInput)) {
-        self.handleSelectedFile(event.target);
+    if (!this.csrfToken) {
+      this.csrfToken = AppUtil.csrfToken();
+    }
+
+    document.body.addEventListener('change', (event) => {
+      if (event.target.closest(this.fileInput)) {
+        this.handleSelectedFile(event.target);
       }
     });
 
-    document.body.addEventListener('click', function (event) {
-      if (event.target.closest(self.uploadTrigger)) {
+    document.body.addEventListener('click', (event) => {
+      if (event.target.closest(this.uploadTrigger)) {
         event.preventDefault();
-        var input = document.querySelector(self.fileInput);
+        const input = document.querySelector(this.fileInput);
         if (input) input.click();
       }
     });
-  },
+  }
 
-  handleSelectedFile: function (input) {
-    for (var i = 0; i < input.files.length; i++) {
+  handleSelectedFile(input) {
+    for (let i = 0; i < input.files.length; i++) {
       this.sendFile(input.files[i]);
     }
-  },
+  }
 
-  buildProgressHtml: function (fileName, progressId) {
+  buildProgressHtml(fileName, progressId) {
     return '<div class="card border-primary mb-2">' +
       '<div class="card-header bg-primary text-white">' +
         '<i class="fa fa-file"></i> ' +
@@ -62,47 +61,45 @@ TmpFileUpload.prototype = {
         '</div>' +
       '</div>' +
     '</div>';
-  },
+  }
 
-  buildFileDetailsHtml: function (fieldName, fileIndex, tmpFileName, origFileName) {
+  buildFileDetailsHtml(fieldName, fileIndex, tmpFileName, origFileName) {
     return '<input type="hidden" name="' + AppUtil.escapeHtml(fieldName) + '[' + fileIndex + '][tmp_file_name]" value="' + AppUtil.escapeHtml(tmpFileName) + '" />' +
       '<input type="hidden" name="' + AppUtil.escapeHtml(fieldName) + '[' + fileIndex + '][original_file_name]" value="' + AppUtil.escapeHtml(origFileName) + '" />';
-  },
+  }
 
-  sendFile: function (file) {
-    var self = this;
-    var idx = self.fileIndex;
-    var uri = '/tmp-file-upload';
-    var formData = new FormData();
-    var progressId = self.individualFileProgressContainer.replace('#', '') + idx;
+  sendFile(file) {
+    const idx = this.fileIndex;
+    const uri = '/tmp-file-upload';
+    const formData = new FormData();
+    const progressId = this.individualFileProgressContainer.replace('#', '') + idx;
 
-    self.xhr[idx] = new XMLHttpRequest();
-    self.xhr[idx].open('POST', uri, true);
-    self.xhr[idx].setRequestHeader('X-CSRF-Token', self.csrfToken);
-    self.xhr[idx].onreadystatechange = self.transferComplete(idx, file);
-    self.xhr[idx].upload.addEventListener('progress', self.updateProgress(idx));
-    self.xhr[idx].upload.addEventListener('error', self.transferFailed(idx));
-    self.xhr[idx].upload.addEventListener('abort', self.transferCanceled(idx));
+    this.xhr[idx] = new XMLHttpRequest();
+    this.xhr[idx].open('POST', uri, true);
+    this.xhr[idx].setRequestHeader('X-CSRF-Token', this.csrfToken);
+    this.xhr[idx].onreadystatechange = this.transferComplete(idx, file);
+    this.xhr[idx].upload.addEventListener('progress', this.updateProgress(idx));
+    this.xhr[idx].upload.addEventListener('error', this.transferFailed(idx));
+    this.xhr[idx].upload.addEventListener('abort', this.transferCanceled(idx));
     formData.append('file', file);
 
-    var existing = document.getElementById(progressId);
+    const existing = document.getElementById(progressId);
     if (!existing) {
-      var container = document.querySelector(self.uploadProgressContainer);
+      const container = document.querySelector(this.uploadProgressContainer);
       if (container) {
-        container.insertAdjacentHTML('beforeend', self.buildProgressHtml(file.name, progressId));
+        container.insertAdjacentHTML('beforeend', this.buildProgressHtml(file.name, progressId));
       }
     }
 
-    self.xhr[idx].send(formData);
-    ++self.fileIndex;
-  },
+    this.xhr[idx].send(formData);
+    ++this.fileIndex;
+  }
 
-  updateProgress: function (theFileIndex) {
-    var self = this;
-    return function (event) {
+  updateProgress(theFileIndex) {
+    return (event) => {
       if (event.lengthComputable) {
-        var percentage = Math.round((event.loaded * 100) / event.total);
-        var progressEl = document.querySelector('#' + self.individualFileProgressContainer.replace('#', '') + theFileIndex + ' .progress-bar');
+        const percentage = Math.round((event.loaded * 100) / event.total);
+        const progressEl = document.querySelector('#' + this.individualFileProgressContainer.replace('#', '') + theFileIndex + ' .progress-bar');
         if (progressEl) {
           progressEl.style.width = percentage + '%';
           progressEl.setAttribute('aria-valuenow', percentage);
@@ -110,51 +107,50 @@ TmpFileUpload.prototype = {
         }
       }
     };
-  },
+  }
 
-  transferComplete: function (theFileIndex, file) {
-    var self = this;
-    return function () {
-      var xhr = self.xhr[theFileIndex];
+  transferComplete(theFileIndex, file) {
+    return () => {
+      const xhr = this.xhr[theFileIndex];
       if (xhr.readyState !== 4) return;
-      var progressId = self.individualFileProgressContainer.replace('#', '') + theFileIndex;
-      var progressEl = document.getElementById(progressId);
+      const progressId = this.individualFileProgressContainer.replace('#', '') + theFileIndex;
+      const progressEl = document.getElementById(progressId);
 
       if (xhr.status === 200) {
-        var tmpFileName = xhr.responseText.replace(/"/g, '');
+        const tmpFileName = xhr.responseText.replace(/"/g, '');
         if (progressEl) {
-          var bar = progressEl.querySelector('.progress-bar');
+          const bar = progressEl.querySelector('.progress-bar');
           if (bar) bar.remove();
           progressEl.classList.remove('progress');
-          progressEl.innerHTML = self.buildFileDetailsHtml(self.fieldName, theFileIndex, tmpFileName, file.name);
+          progressEl.innerHTML = this.buildFileDetailsHtml(this.fieldName, theFileIndex, tmpFileName, file.name);
         }
-        if (typeof self.onComplete === 'function') {
-          self.onComplete({
+        if (typeof this.onComplete === 'function') {
+          this.onComplete({
             filename: tmpFileName,
             size: file.size,
             original_filename: file.name
           });
         }
-        AjaxBind.init();
+        AppCore.init();
       } else {
-        var errorBar = progressEl ? progressEl.querySelector('.progress-bar') : null;
+        const errorBar = progressEl ? progressEl.querySelector('.progress-bar') : null;
         if (errorBar) {
           errorBar.classList.add('bg-danger');
           errorBar.textContent = 'There was an error uploading your file! - HTTP ' + xhr.status + ' Error';
         }
       }
     };
-  },
+  }
 
-  transferFailed: function (theFileIndex) {
-    return function () {
+  transferFailed() {
+    return () => {
       PopTart.error('There was an error uploading one of your files!');
     };
-  },
+  }
 
-  transferCanceled: function (theFileIndex) {
-    return function () {
+  transferCanceled() {
+    return () => {
       PopTart.warning('The file upload operation was aborted.');
     };
   }
-};
+}

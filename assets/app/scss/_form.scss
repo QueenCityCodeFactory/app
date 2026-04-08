@@ -1,10 +1,8 @@
 .required > label:after {
     content: "\2a";
     display: inline-block;
-    font: normal normal 900 14px/1 'Font Awesome 7 Free';
-    font-size: inherit;
+    font: normal normal 900 0.75em/1 'Font Awesome 7 Free', sans-serif;
     text-rendering: auto;
-    font-size: 0.75em;
     color: #1782e1;
     margin-left: 5px;
 }

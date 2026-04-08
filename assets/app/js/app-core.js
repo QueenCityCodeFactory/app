@@ -1,14 +1,15 @@
+/* global FormatTime */
 /**
  * AppCore - Core application initialization and utility functions.
  * Uses vanilla JS and Bootstrap 5 native APIs. No jQuery dependency.
  */
-var AppCore = {
+const AppCore = {
 
   /**
    * Initialize all core handlers.
    * Safe to call multiple times (idempotent) — used after AJAX content injection.
    */
-  init: function () {
+  init() {
     this.tooltips();
     this.popovers();
     this.htmlPopovers();
@@ -20,8 +21,8 @@ var AppCore = {
   /**
    * Initialize Bootstrap 5 tooltips on elements with data-bs-toggle="tooltip"
    */
-  tooltips: function () {
-    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+  tooltips() {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
       if (!bootstrap.Tooltip.getInstance(el)) {
         new bootstrap.Tooltip(el);
       }
@@ -31,8 +32,8 @@ var AppCore = {
   /**
    * Initialize Bootstrap 5 popovers on elements with data-bs-toggle="popover"
    */
-  popovers: function () {
-    document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) {
+  popovers() {
+    document.querySelectorAll('[data-bs-toggle="popover"]').forEach((el) => {
       if (!bootstrap.Popover.getInstance(el)) {
         new bootstrap.Popover(el);
       }
@@ -42,11 +43,11 @@ var AppCore = {
   /**
    * Initialize HTML content popovers on .html-popover elements
    */
-  htmlPopovers: function () {
-    document.querySelectorAll('.html-popover').forEach(function (el) {
+  htmlPopovers() {
+    document.querySelectorAll('.html-popover').forEach((el) => {
       if (!bootstrap.Popover.getInstance(el)) {
-        var sourceSelector = el.dataset.element;
-        var sourceEl = sourceSelector ? document.querySelector(sourceSelector) : null;
+        const sourceSelector = el.dataset.element;
+        const sourceEl = sourceSelector ? document.querySelector(sourceSelector) : null;
         new bootstrap.Popover(el, {
           content: sourceEl ? sourceEl.innerHTML : '',
           html: true
@@ -58,7 +59,7 @@ var AppCore = {
   /**
    * Initialize Inputmask on all input elements (vanilla mode).
    */
-  masks: function () {
+  masks() {
     if (typeof Inputmask !== 'undefined') {
       Inputmask().mask(document.querySelectorAll('input'));
     }
@@ -67,9 +68,9 @@ var AppCore = {
   /**
    * Initialize TomSelect on .enhanced-select elements
    */
-  enhancedSelects: function () {
-    document.querySelectorAll('select.enhanced-select:not(.tomselected)').forEach(function (el) {
-      var config = {
+  enhancedSelects() {
+    document.querySelectorAll('select.enhanced-select:not(.tomselected)').forEach((el) => {
+      const config = {
         allowEmptyOption: true
       };
 
@@ -89,8 +90,6 @@ var AppCore = {
 /**
  * Boot the application once the DOM is ready
  */
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
   AppCore.init();
-  AjaxPagination.init();
-  ModalConfirm.init();
 });

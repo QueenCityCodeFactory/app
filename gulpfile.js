@@ -9,6 +9,7 @@ const rename = require('gulp-rename');
 const replace = require('gulp-replace');
 const gulpSass = require('gulp-sass');
 const sass = require('sass');
+const stylelint = require('gulp-stylelint-esm');
 const terser = require('gulp-terser');
 const mergeStream = require('merge-stream');
 const path = require('path');
@@ -106,9 +107,23 @@ function lintScripts(done) {
             .pipe(expectFile.real({ verbose: true }, files.map(path.normalize)))
             .pipe(jshint())
             .pipe(jshint.reporter('jshint-stylish'))
+            .pipe(jshint.reporter('fail'))
     );
     if (streams.length === 0) return done();
     return mergeStream(streams);
+}
+
+function lintStyles(done) {
+    const scssFiles = Object.values(styles)
+        .flat()
+        .filter(f => f.endsWith('.scss'));
+    if (scssFiles.length === 0) return done();
+
+    return gulp.src(scssFiles)
+        .pipe(stylelint.default({
+            reporters: [{ formatter: 'string', console: true }],
+            failAfterError: true
+        }));
 }
 
 function cacheBuster(done) {
@@ -140,10 +155,11 @@ function watchScripts(done) {
 // ---------------------------------------------------------------------------
 
 exports.default = gulp.series(
-    lintScripts,
+    gulp.parallel(lintScripts, lintStyles),
     gulp.parallel(installFonts, buildScripts, buildStyles),
     cacheBuster
 );
+exports.lint    = gulp.parallel(lintScripts, lintStyles);
 exports.styles  = gulp.series(buildStyles, cacheBuster);
 exports.scripts = gulp.series(lintScripts, buildScripts, cacheBuster);
 exports.fonts   = installFonts;

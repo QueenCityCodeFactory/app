@@ -9,4 +9,5 @@ $extra-theme-colors: (
     "lime": $lime,
 );
 
+/* stylelint-disable scss/no-global-function-names */
 $theme-colors: map-merge($theme-colors, $extra-theme-colors);

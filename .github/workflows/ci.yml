@@ -77,3 +77,26 @@ jobs:
       run: phpstan
       env:
         SECURITY_SALT: f76f1c8475585c46c6acd3ddcb8f5e0f15de524637bb4080a08c4afe7cfc9144
+
+  frontend-lint:
+    name: Frontend Lint
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Lint JavaScript
+      run: npm run lint:js
+
+    - name: Lint SCSS
+      if: always()
+      run: npm run lint:scss
