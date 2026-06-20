@@ -157,9 +157,11 @@
         state: restarted
 
     - name: Create MySQL application user
-      community.mysql.mysql_user:
+      ansible.mysql.mysql_user:
         name: "{{ db_user }}"
-        password: "{{ db_password }}"
+        plugin: caching_sha2_password
+        plugin_auth_string: "{{ db_password }}"
+        salt: "{{ mysql_user_password_salt | default('innkeeperdefaultsalt') }}"
         priv: "{{ db_name }}.*:ALL,GRANT"
         host: "%"
         state: present
@@ -167,7 +169,7 @@
       when: mysql_server_local | default(true)
 
     - name: Create the MySQL database
-      community.mysql.mysql_db:
+      ansible.mysql.mysql_db:
         name: "{{ db_name }}"
         encoding: utf8mb4
         collation: utf8mb4_general_ci
@@ -175,8 +177,30 @@
         login_unix_socket: /var/run/mysqld/mysqld.sock
       when: mysql_server_local | default(true)
 
+    - name: Create the MySQL test database
+      ansible.mysql.mysql_db:
+        name: "{{ db_name }}_test"
+        encoding: utf8mb4
+        collation: utf8mb4_general_ci
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      when: mysql_server_local | default(true)
+
+    - name: Grant app user access to test database
+      ansible.mysql.mysql_user:
+        name: "{{ db_user }}"
+        plugin: caching_sha2_password
+        plugin_auth_string: "{{ db_password }}"
+        salt: "{{ mysql_user_password_salt | default('innkeeperdefaultsalt') }}"
+        priv: "{{ db_name }}_test.*:ALL,GRANT"
+        host: "%"
+        append_privs: true
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      when: mysql_server_local | default(true)
+
     - name: Run app migrations on initial provision
-      command: "{{ app_path }}/bin/cake migrations migrate -vvvv"
+      command: "{{ app_path }}/bin/cake migrations migrate --no-lock -vvvv"
       when: not state_built.stat.exists
 
   post_tasks:

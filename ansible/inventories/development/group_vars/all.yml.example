@@ -26,6 +26,8 @@ app_domain: "CHANGEME.test"
 db_name: "CHANGEME"
 db_user: "CHANGEME"
 db_password: "CHANGEME"
+# 20-character salt used by ansible.mysql for idempotent caching_sha2_password updates.
+mysql_user_password_salt: "innkeeperdefaultsalt"
 mysql_server_local: true
 
 # ─────────────────────────────────────────────────────────────
@@ -52,7 +54,7 @@ nginx_configurations:
   - server_name: "CHANGEME.test"
     config: "default"
     document_root: "/var/www/CHANGEME/webroot"
-    php_fpm_version: "php8.4"
+    php_fpm_version: "php8.5"
     default_server: true
 
 # ─────────────────────────────────────────────────────────────

@@ -27,9 +27,12 @@ cd myapp
 cp .innkeeper.env.example .innkeeper.env
 cp config/app_local.example.php config/app_local.php
 cp ansible/inventories/development/group_vars/all.yml.example ansible/inventories/development/group_vars/all.yml
+umask 077; test -f ~/.vault_pass.app || openssl rand -base64 32 > ~/.vault_pass.app
+ansible-galaxy collection install -r ansible/requirements.yml
 ```
 
 Review `.innkeeper.env` — defaults are sensible for most setups. Update `all.yml` with your project name and settings.
+If your project already has shared Ansible Vault values, replace `~/.vault_pass.app` with the shared project vault password.
 
 ### 3. Launch the VM
 
@@ -41,7 +44,7 @@ On first run, Innkeeper will:
 1. Create a Multipass VM
 2. Mount the project directory into the VM
 3. Rsync files to the runtime directory (`SHADOW_DEST`)
-4. Run the Ansible playbook (`ansible/playbooks/development.yml`) to install PHP 8.4, Nginx, Node.js, Memcached, Mailpit, etc.
+4. Run the Ansible playbook (`ansible/playbooks/development.yml`) to install PHP 8.5, Nginx, Node.js, Memcached, Mailpit, etc.
 5. Start the file watcher (host→VM sync)
 6. Add local domain to `/etc/hosts`
 

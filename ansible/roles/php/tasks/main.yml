@@ -1,21 +1,4 @@
 ---
-- name: Add ondrej/php PPA (with retry logic)
-  shell: "add-apt-repository -y ppa:ondrej/php"
-  register: php_ppa_result
-  retries: 3
-  delay: 30
-  until: php_ppa_result is succeeded
-  failed_when: false
-  become: true
-  become_user: root
-
-- name: Warn if PPA addition failed
-  debug:
-    msg: |
-      WARNING: Could not add ondrej/php PPA (Launchpad may be down).
-      Falling back to default Ubuntu PHP packages.
-  when: php_ppa_result is failed
-
 - name: Install PHP and extensions
   apt:
     pkg: "{{ php_packages }}"
@@ -67,7 +50,7 @@
     - regexp: "^max_execution_time.?=.+$"
       line: "max_execution_time = {{ php_max_execution_time }}"
     - regexp: "^session.gc_probability.?=.+$"
-      line: "session.gc_probability = 1"
+      line: "session.gc_probability = 0"
     - regexp: "^zend.assertions.?=.+$"
       line: "zend.assertions = 1"
   notify: restart php-fpm

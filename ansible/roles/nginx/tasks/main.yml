@@ -1,21 +1,4 @@
 ---
-- name: Add ondrej/nginx PPA (with retry logic)
-  shell: "add-apt-repository -y ppa:ondrej/nginx"
-  register: nginx_ppa_result
-  retries: 3
-  delay: 30
-  until: nginx_ppa_result is succeeded
-  failed_when: false
-  become: true
-  become_user: root
-
-- name: Warn if PPA addition failed
-  debug:
-    msg: |
-      WARNING: Could not add ondrej/nginx PPA (Launchpad may be down).
-      Falling back to default Ubuntu nginx package.
-  when: nginx_ppa_result is failed
-
 - name: Install nginx
   apt:
     pkg:

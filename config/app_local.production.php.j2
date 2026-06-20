@@ -1,0 +1,33 @@
+<?php
+/**
+ * Production app_local.php, templated by Ansible.
+ *
+ * Copy this template into a project-specific production deployment flow and
+ * provide the variables from that project's inventory.
+ */
+
+use function Cake\Core\env;
+
+return [
+    'debug' => false,
+
+    'App' => [
+        'fullBaseUrl' => {{ app_full_base_url | default('https://' ~ app_domain) | to_json }},
+        'environment' => {{ app_environment | default('production') | to_json }},
+    ],
+
+    'Security' => [
+        'salt' => {{ security_salt | to_json }},
+    ],
+
+    'Datasources' => [
+        'default' => [
+            'host' => {{ db_host | default('localhost') | to_json }},
+            'port' => {{ db_port | default(3306) }},
+            'username' => {{ db_user | to_json }},
+            'password' => {{ db_password | to_json }},
+            'database' => {{ db_name | to_json }},
+            'url' => env('DATABASE_URL', null),
+        ],
+    ],
+];

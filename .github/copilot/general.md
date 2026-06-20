@@ -6,10 +6,10 @@ This is a CakePHP 5 application skeleton from Willetts Technology, designed as a
 > **Project status:** Application skeleton / starting template. No application-specific models, controllers, or database schema exist yet. Code generation (baking) and new feature work will build on this skeleton.
 
 ### Tech Stack
-- **CakePHP 5.3** — PHP 8.4+
+- **CakePHP 5.3** — PHP 8.5+
 - **MySQL 8.4+** — database
 - **Nginx** — web server with PHP-FPM
-- **Ubuntu 24.04 / 26.04** — VM guest OS
+- **Ubuntu 26.04** — VM guest OS
 - **Bootstrap 5.3** — via [ButterCream](https://github.com/QueenCityCodeFactory/butter-cream) plugin
 - **Vanilla JS** — no jQuery; use native DOM APIs, fetch, Bootstrap 5 JS API
 - **TomSelect** — enhanced select dropdowns (replaces Select2)
@@ -37,7 +37,7 @@ This is a standard CakePHP 5 application (not plugin-based). Application code li
 - `src/Model/Table/` — ORM table classes
 - `src/Model/Entity/` — entity classes
 - `src/Model/Behavior/` — reusable model behaviors
-- `src/Enum/` — PHP 8.4 native backed enums
+- `src/Enum/` — PHP 8.5 native backed enums
 - `src/View/` — view classes and helpers
 - `src/Middleware/` — HTTP middleware
 - `templates/` — view templates (.php files)
@@ -84,7 +84,7 @@ class ExamplesTable extends Table
 - **Migrations must extend `Migrations\BaseMigration`** — never `AbstractMigration` (see [migrations guide](migrations.md))
 
 ### Enums
-Use PHP 8.4 native backed enums in `src/Enum/`. All enums should implement `LabeledEnum` and use the `HasLabeledOptionsTrait` trait:
+Use PHP 8.5 native backed enums in `src/Enum/`. All enums should implement `LabeledEnum` and use the `HasLabeledOptionsTrait` trait:
 
 ```php
 use App\Enum\LabeledEnum;

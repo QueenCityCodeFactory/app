@@ -11,7 +11,7 @@ This skeleton builds upon [cakephp/app](https://github.com/cakephp/app) with add
 
 | Layer | Technology |
 |-------|-----------|
-| **Framework** | [CakePHP 5.3](https://book.cakephp.org/5/en/index.html) (PHP 8.4+) |
+| **Framework** | [CakePHP 5.3](https://book.cakephp.org/5/en/index.html) (PHP 8.5+) |
 | **Database** | MySQL 8.4+ |
 | **Web Server** | Nginx with PHP-FPM |
 | **Frontend** | [Bootstrap 5.3](https://getbootstrap.com/docs/5.3/) via [ButterCream](https://github.com/QueenCityCodeFactory/butter-cream) plugin |
@@ -29,7 +29,7 @@ This skeleton includes [QueenCityCodeFactory/butter-cream](https://github.com/Qu
 
 ### Development Environment
 - **Innkeeper / Ansible provisioning** - Complete playbooks and roles for automated development environment setup
-- **Pre-configured services**: PHP 8.4+ with FPM, Nginx with SSL, MySQL, Memcached, Mailpit, Node.js (NVM), Chrony
+- **Pre-configured services**: PHP 8.5+ with FPM, Nginx with SSL, MySQL, Memcached, Mailpit, Node.js (NVM), Chrony
 
 ### Frontend Asset Pipeline
 - **Gulp 5 build system** - Automated SCSS compilation, JavaScript bundling, and asset optimization
@@ -52,7 +52,7 @@ Pre-built JavaScript utilities in `assets/app/js/`:
 - `tmp-file-upload.js` - Temporary file upload with progress bars
 
 ### Enums (`src/Enum/`)
-PHP 8.4 native backed enums with a shared `LabeledEnum` interface and `HasLabeledOptionsTrait` trait:
+PHP 8.5 native backed enums with a shared `LabeledEnum` interface and `HasLabeledOptionsTrait` trait:
 - `Priority` - low, medium, high, critical (with Bootstrap badge colors)
 - `Status` - draft, active, inactive, archived (with Bootstrap badge colors)
 - `UsState` - All 50 US states + DC
@@ -81,6 +81,8 @@ See [docs/development-environment.md](docs/development-environment.md) for full 
 1. Clone this repository and configure:
    ```bash
    cp config/app_local.example.php config/app_local.php
+   umask 077; test -f ~/.vault_pass.app || openssl rand -base64 32 > ~/.vault_pass.app
+   ansible-galaxy collection install -r ansible/requirements.yml
    ```
 2. Launch the development environment:
    ```bash
@@ -158,7 +160,7 @@ updates should be done carefully:
 
 ### Dependencies
 
-- **PHP**: 8.4 or higher
+- **PHP**: 8.5 or higher
 - **CakePHP**: 5.3+
 - **Node.js**: 20+ (managed via NVM in the VM)
 - **Composer**: Latest version

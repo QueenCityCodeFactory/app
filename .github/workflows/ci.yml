@@ -14,15 +14,13 @@ permissions:
 
 jobs:
   testsuite:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
         include:
-          - php-version: '8.4'
-            dependencies: 'lowest'
           - php-version: '8.5'
-            dependencies: 'highest'
+            dependencies: 'lowest'
           - php-version: '8.5'
             dependencies: 'highest'
 
@@ -53,7 +51,7 @@ jobs:
 
   coding-standard:
     name: Coding Standard & Static Analysis
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
     - uses: actions/checkout@v6
@@ -61,7 +59,7 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.4'
+        php-version: '8.5'
         extensions: mbstring, intl
         coverage: none
         tools: cs2pr, phpstan:2.1
@@ -80,7 +78,7 @@ jobs:
 
   frontend-lint:
     name: Frontend Lint
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
     - uses: actions/checkout@v6

@@ -1,5 +1,5 @@
 ---
-php_version: "8.4"
+php_version: "8.5"
 
 php_packages:
   - "php{{ php_version }}-bcmath"
@@ -8,13 +8,11 @@ php_packages:
   - "php{{ php_version }}-fpm"
   - "php{{ php_version }}-gd"
   - "php{{ php_version }}-imagick"
-  - "php{{ php_version }}-imap"
   - "php{{ php_version }}-intl"
   - "php{{ php_version }}-ldap"
   - "php{{ php_version }}-mbstring"
   - "php{{ php_version }}-memcached"
   - "php{{ php_version }}-mysql"
-  - "php{{ php_version }}-opcache"
   - "php{{ php_version }}-soap"
   - "php{{ php_version }}-sqlite3"
   - "php{{ php_version }}-xml"
